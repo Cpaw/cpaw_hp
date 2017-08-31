@@ -10,6 +10,8 @@ use iron::status;
 use router::{Router, url_for};
 use hbs::{Template, HandlebarsEngine, DirectorySource};
 
+mod login;
+
 fn main() {
     
     fn top_handler(req: &mut Request) -> IronResult<Response> {
@@ -31,13 +33,11 @@ fn main() {
         let map = req.get_ref::<Params>().unwrap();
         
         return match map.find(&["name"]) {
-            
             Some(&Value::String(ref name)) => {
                 Ok(Response::with(
                     (status::Ok,
-                                         format!("Hello {}", name).as_str())
+                     format!("Hello {}", name).as_str())
                 ))
-                                
             },
             _ => Ok(Response::with((status::Ok, "Hello world")))
         }
@@ -47,6 +47,7 @@ fn main() {
     let mut router = Router::new();
     router.get("/", top_handler, "index");
     router.post("/greet", greet_handler, "greeting");
+    router.post("/login", login::login, "login");
     
     //Create Chain
     let mut chain = Chain::new(router);
