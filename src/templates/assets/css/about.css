@@ -1,0 +1,64 @@
+h1 {
+  text-align: center;
+  font-size: 50px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 900;
+  color: #2c88b9;
+}
+
+h2 {
+  padding: 5px;
+  background: #dcf8ff;
+  border-left: #3c78b9 5px solid;
+
+}
+
+a {
+  color: #2c88b9;
+  text-decoration: none;
+  position: relative;
+  padding: 4px;
+  transition: .1s;
+}
+a:hover {
+  background: #2c88b9;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#about_us {
+    padding: 0;
+    margin:0 auto;
+    text-align: center;
+    width: 80%;
+}
+
+#about_us p {
+    font-family: 'Noto Sans Japanese', serif;
+    color: #5c97da;
+    font-size:18px;
+}
+
+
+
+#wrapper {
+  margin: 5% auto;
+  width: 100%;
+}
+
+#about {
+  width: 60%;
+  margin: 5% auto;
+}
+
+
+.content {
+  width: 97%;
+  margin: 0 auto;
+}
+
+.content img {
+  text-align: center;
+  margin: 0 auto;
+  width: 80%;
+}

@@ -1,0 +1,24 @@
+header {
+	background-color: #5cb8e9;
+}
+
+html,body {
+	height: 100%;
+}
+
+body {
+	margin:0;
+	overflow-y: scroll;
+}
+
+footer {
+	text-align: center;
+	background-color: #ccc;
+	clear: both;
+}
+
+#logo {
+	width: 60%;
+	margin-left: auto;
+	margin-right: auto;
+}

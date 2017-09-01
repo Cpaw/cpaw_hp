@@ -1,0 +1,154 @@
+h1 {
+	text-align: center;
+	font-size: 50px;
+	font-family: 'Lato', sans-serif;
+	font-weight: 900;
+	color: #2c88b9;
+}
+
+
+#about_title {
+	margin: 0 auto 0 auto;
+}
+
+#member_show {
+	width: 100%;
+}
+#wrapper {
+	margin: 5% auto;
+	width: 100%;
+}
+
+.member_in {
+	width: 60%;
+	margin: 0 auto 10% auto;
+	clear: left;
+	clear: right;
+	padding: 0 0 200px 0;
+}
+
+.clear {
+	clear: both;
+}
+
+.member_image img {
+	width: 100%;
+}
+
+.member_image {
+    border-radius:100%;
+    overflow:hidden;
+	width: 30%;
+	float: left;
+	clear:left;
+}
+
+.member_exp {
+	color: #fcf8ff;
+	padding-left: 8px;
+	background-color: #5cb8e9;
+	box-shadow: 10px 10px 0px #3c98c9;
+	width: 66%;
+	margin: 0 auto;
+	float: right;
+}
+.cards {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-left: 40px;
+  text-align: center;
+}
+.card {
+  width: 300px;
+  height: 300px;
+}
+
+.demo-card-image.mdl-card {
+  width: 256px;
+  height: 256px;
+  background-image: url(../img/member/default.png) ;
+  background-size: cover;
+}
+.mdl-shadow--2dp{
+
+}
+.demo-card-image > .mdl-card__actions {
+  height: 50px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.4);
+}
+.mdl-card__links {
+  height: 30px;
+  padding-bottom: 16px;
+  background: rgba(0, 0, 0, 0.6);
+}
+.demo-card-image__filename {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+font-weight: 900;
+
+}
+.mdl-card__explain {
+  height: 140px;
+  text-align: left;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.6);
+}
+.mdl-card__skills{
+  height: 30px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.mdl-card__skills p {
+	display: inline-block;
+	padding:0 5px 0 5px;
+	margin:0 7px 0 7px;
+  font-size: .75em;
+  background: #FC441E;
+  color: #fff;
+}
+.mdl-hide{
+	height: 190px;
+	display: none;
+}
+.mdl-card__links{
+	display:table; /* 要素をテーブルのようにする */
+    width:100%;
+}
+.mdl-card__links a{
+	max-width: 30px;
+	table-layout: fixed;
+  display:table-cell; /* 要素をテーブルのようにする */
+  padding-top: 5px;
+  padding-bottom: 5px;
+    vertical-align:middle;
+}
+.card_twitter{
+	width: 30px;
+	height: 100%;
+
+	background: #439DC1;
+}
+
+.card_twitter img{
+	width: 30px;
+	height: 30px;
+
+}
+
+.card_facebook{
+	width: 30px;
+	height: 30px;
+	background: #3c5a96;
+}
+
+.card_facebook img{
+	width:30px;
+	height:30px;
+
+}

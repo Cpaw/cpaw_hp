@@ -1,0 +1,112 @@
+h1 {
+	text-align: center;
+	font-size: 50px;
+	font-family: 'Lato', sans-serif;
+	font-weight: 900;
+	color: #2c88b9;
+}
+
+p {
+	font-size: 18px;
+}
+
+#wrapper {
+	margin: 5% auto;
+	width: 100%;
+}
+
+#about_us {
+	padding: 0;
+    margin:0 auto;
+    text-align: center;
+    width: 80%;
+}
+
+#about_us p {
+    font-family: 'Noto Sans Japanese', serif;
+    color: #5c97da;
+}
+
+#our_active {
+    clear:left;
+    text-align: center;
+    color: #ee9134;
+    text-shadow: 1px 1px 0px #ddd;
+    width: 100%;
+}
+
+#our_active p {
+    font-size: 40px;
+    font-weight: 900;
+    width: 20%;
+    overflow:hidden;
+    margin: 0 auto;
+}
+
+#top_active {
+    clear: left;
+    background-color: #ee8124;
+    height: 50%;
+    padding: 0;
+}
+
+#bottom_active {
+    background-color: #fdc92f;
+    height: 30%;
+    clear: both;
+}
+
+.top_exp {
+    margin: 4%;
+    float: left;
+    width: 25%;
+}
+
+.top_exp p {
+    font-family: 'Noto Sans Japanese', serif;
+}
+
+.top_exp img{
+	width: 100%;
+}
+
+.bottom_exp {
+	font-weight: 400;
+	color: white;
+	margin-left : 4%;
+	margin-right: 4%;
+	float: left;
+	width: 25%;
+}
+
+.bottom_exp p {
+    	font-family: 'Noto Sans Japanese', serif;
+	font-size: 20px;
+}
+
+.U_logo {
+	margin: 50 0;
+	padding: 5% 0 3% 0;
+	float: left;
+	width: 45%;
+}
+
+.U_logo img {
+	width: 100%;
+}
+
+.batsu {
+	margin: 50 0;
+	padding: 10% 0 3% 0;
+	float: left;
+	width: 10%;
+}
+
+.batsu img {
+	width: 50%;
+}
+
+.wrap {
+	width: 80%;
+	margin:0 auto;
+}

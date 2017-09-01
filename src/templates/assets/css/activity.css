@@ -1,0 +1,119 @@
+h1 {
+	text-align: center;
+	font-size: 50px;
+	font-family: 'Lato', sans-serif;
+	font-weight: 900;
+	color: #2c88b9;
+}
+
+#wrapper {
+	margin: 5% auto;
+	width: 100%;
+    font-family: 'Noto Sans Japanese', serif;
+}
+
+.clear {
+	clear: left;
+	clear: right;
+}
+
+#wrapper #active a {
+  color: #2c88b9;
+  text-decoration: none;
+  position: relative;
+  padding: 4px;
+  transition: .1s;
+}
+#wrapper #active a:hover {
+  background: #2c88b9;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#wrapper #active h2 {
+	background: url(../img/line_h2.png) repeat bottom left;
+	line-height: 40px;
+	font-size: 35px;
+	margin: 0 auto;
+	padding: 5px 0;
+}
+
+#wrapper #active {
+	margin: 10px auto;
+	width: 60%;
+	text-align: center;
+
+}
+
+#wrapper #active p {
+	margin: 0 auto 5% auto;
+	background: url(../img/line.png) repeat bottom left;
+	font-size: 100%;
+	line-height: 30px;
+	padding: 0 10px;
+}
+
+#wrapper-60 {
+	width: 30%;
+	margin-left: 20%;
+	float: left;
+}
+
+#wrapper-60 .icon {
+	width: 40%;
+	float: left;
+	margin: 20 0;	
+}
+
+#wrapper-60 .icon img {
+	width: 45%;
+}
+
+
+
+#wrapper-60 .ticon {
+	width: 100%;
+	float: left;
+	margin: 20 0;
+	position: relative;	
+}
+
+#wrapper-60 .ticon a {
+  color: #2c88b9;
+  text-decoration: none;
+  position: relative;
+  padding: 4px;
+  transition: .1s;
+}
+#wrapper-60 .ticon a:hover {
+  background: #2c88b9;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#wrapper-60 .ticon img {
+	width: 18%;
+	float: left;
+	display: table-cell;
+	vertical-align: middle;
+	margin: 2%;
+}
+
+#wrapper-60 .ticon p {
+	font-size: 110%;
+	line-height: 30px;
+	padding: 0 10px;
+	width: 70%;
+	float: left;
+	line-height: 110%;
+	display: table-cell;
+	vertical-align: middle;
+
+}
+
+
+#wrapper-40 {
+	width: 30%;
+	float: right;
+	margin-right: 20%;
+}
