@@ -19,6 +19,7 @@ use rustc_serialize::json;
 mod login;
 mod sql;
 mod routing;
+mod user;
 
 fn main() {
     
@@ -31,10 +32,9 @@ fn main() {
     router.get("/users", routing::users, "users");
     router.get("/about", routing::about, "about");
     router.get("/blog", routing::blog, "blog");
-    router.get("/random", routing::random, "random");
-    router.get("/users_json", routing::users_json, "users_json");
+    //router.get("/random", routing::random, "random");
+    //router.get("/users_json", routing::users_json, "users_json");
     router.get("/activity", routing::activity, "activity");
-    router.get("/random", routing::random, "random");
     router.post("/login", login::login, "login");
     router.get("/register", sql::register_get, "register");
     router.post("/register", sql::register, "register"); // OK
