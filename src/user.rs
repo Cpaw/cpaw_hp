@@ -1,5 +1,6 @@
 extern crate crypto;
 extern crate rusqlite;
+extern crate serde;
 
 use std::vec::Vec;
 
@@ -9,7 +10,8 @@ use self::crypto::digest::Digest;
 use self::rusqlite::Connection;
 use self::rusqlite::types::ToSql;
 
-// TODO duplicate
+use self::serde::ser::{Serialize, Serializer, SerializeStruct};
+
 static DB_PATH: &'static str = "db.sql";
 
 #[derive(Debug)]
@@ -102,4 +104,16 @@ impl User {
         u.save();
         User::find_by("email", &u.email)
     }
+}
+
+impl Serialize for User {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+        {
+            let mut s = serializer.serialize_struct("User", 3)?;
+            s.serialize_field("username", &self.username)?;
+            s.serialize_field("bio", &self.bio)?;
+            s.serialize_field("graphic", &self.graphic)?;
+            s.end()
+        }
 }

@@ -59,15 +59,16 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
      */
     
     let mut data = HashMap::new();
-    let mut v = Vec::new();
-    for user in User::all() {
-        let mut h = HashMap::new();
-        h.insert(String::from("username"), user.username);
-        h.insert(String::from("bio"), user.bio);
-        h.insert(String::from("graphic"), user.graphic);
-        v.push(h);
-    }
-    data.insert(String::from("users"), v);
+    // let mut v = Vec::new();
+    // for user in User::all() {
+    //     let mut h = HashMap::new();
+    //     h.insert(String::from("username"), user.username);
+    //     h.insert(String::from("bio"), user.bio);
+    //     h.insert(String::from("graphic"), user.graphic);
+    //     v.push(h);
+    // }
+
+    data.insert(String::from("users"), User::all());
     resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
     return Ok(resp);
 }
