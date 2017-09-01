@@ -41,18 +41,17 @@
 
 		<div id="member_show">
 			<div class="cards">
-
-                          {{#each usernames}}
+                          {{#each users}}
 			  <div class="card">
-			    <div class="demo-card-image mdl-card mdl-shadow--2dp" style="background-image:url(assets/img/member/palloc.jpg);">	<div class="mdl-card--expand"></div>
+			    <div class="demo-card-image mdl-card mdl-shadow--2dp" style="background-image:url(assets/img/member/{{graphic}}.png);">	<div class="mdl-card--expand"></div>
 			      <div class="mdl-card__actions">
-				<span class="demo-card-image__filename">{{this}}</span>
+				<span class="demo-card-image__filename">{{username}}</span>
 			      </div>
 			      <div class="mdl-card__skills">
 				<p>Security</p><p>MachineLearning</p></div>
 			      <div class="mdl-hide">
 				<div class="mdl-card__explain">
-				  法政大学理工学部応用情報工学科4年。CTFやスコアサーバーの開発、機械学習などを行っている。CTFチームcpaw、vulsに所属。ICTSC5・6・7運営。	
+				  {{bio}}
 				</div>
 				<div class="mdl-card__links">
 				  <a class="card_twitter" target="_blank" href="https://twitter.com/porisuteru"><img src="assets/img/member/twitter.png"></a><a class="card_facebook" target="_blank" href="https://facebook.com/palloc1"><img src="assets/img/member/facebook.png"></a>	
