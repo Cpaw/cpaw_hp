@@ -27,11 +27,31 @@
 			</ul>
 		</nav>
 		<div id="wrapper">
-			<h1>Works</h1>
+		  <h1>Works</h1>
 			<div id="about_us">
 				<p>私たちはOSC(オープンソースカンファレンス)などに向けて、電子工作品やソフトウェアの製作をしています。</p>
 				<p>ここでは、今までにメンバーがCPAWで制作した作品をいくつか紹介します。</p>
 			</div>
+
+                        {{#each blog}}
+                        <div id="about">
+			  <h2>
+			    {{title}}(筆者:{{author}})
+			  </h2>
+			  <div class="content">
+                            {{body}}
+        		    <p>CPAW初の電子工作作品。RaspberryPi × Leap Motion × Unityを使った手で操縦できるチロルチョコの自動販売機です。</p>
+        		    <p><img src="assets/img/jihanki.jpg">
+        		    <p>Leap Motionに手をかざし、画面中央のピンク色のポインタを上下左右に移動させることで、自動販売機が走ります。</p>
+        		    <p>Leap Motionとラズパイの接続、UIはUnityを用いて制御しました。</p>
+        		    <p>また、RaspberryPiで自動販売機の移動を操作し、自動販売機のボタンを押すとサーボモータが回転しチロルチョコが出てくる仕組みです。</p>
+        		    <p>当時の1年の新入生が頑張ってくれました。MVPです。</p>
+			    <p>展示後、諸事情により跡形もなく消えました。</p>
+        		    <p>開発者:いとう/takt/ちゃせん</p>
+			  </div>
+			</div>
+                        {{/each}}
+                        <!--
 			<div id="about">
 				<h2>
 					OSC 2017 Spring 展示品 - ロボットアーム
@@ -44,21 +64,23 @@
         			<p>開発者:ちゃせん/生田/ありあけ/いとう</p>
 			    </div>
 			</div>
+
 			<div id="about">
-				<h2>
-					OSC2016 Fall 展示品 - 走る！自動販売機
-				</h2>
-				<div class="content">
-        			<p>CPAW初の電子工作作品。RaspberryPi × Leap Motion × Unityを使った手で操縦できるチロルチョコの自動販売機です。</p>
-        			<p><img src="assets/img/jihanki.jpg">
-        			<p>Leap Motionに手をかざし、画面中央のピンク色のポインタを上下左右に移動させることで、自動販売機が走ります。</p>
-        			<p>Leap Motionとラズパイの接続、UIはUnityを用いて制御しました。</p>
-        			<p>また、RaspberryPiで自動販売機の移動を操作し、自動販売機のボタンを押すとサーボモータが回転しチロルチョコが出てくる仕組みです。</p>
-        			<p>当時の1年の新入生が頑張ってくれました。MVPです。</p>
-					<p>展示後、諸事情により跡形もなく消えました。</p>
-        			<p>開発者:いとう/takt/ちゃせん</p>
-				</div>
+			  <h2>
+			    OSC2016 Fall 展示品 - 走る！自動販売機
+			  </h2>
+			  <div class="content">
+        		    <p>CPAW初の電子工作作品。RaspberryPi × Leap Motion × Unityを使った手で操縦できるチロルチョコの自動販売機です。</p>
+        		    <p><img src="assets/img/jihanki.jpg">
+        		    <p>Leap Motionに手をかざし、画面中央のピンク色のポインタを上下左右に移動させることで、自動販売機が走ります。</p>
+        		    <p>Leap Motionとラズパイの接続、UIはUnityを用いて制御しました。</p>
+        		    <p>また、RaspberryPiで自動販売機の移動を操作し、自動販売機のボタンを押すとサーボモータが回転しチロルチョコが出てくる仕組みです。</p>
+        		    <p>当時の1年の新入生が頑張ってくれました。MVPです。</p>
+			    <p>展示後、諸事情により跡形もなく消えました。</p>
+        		    <p>開発者:いとう/takt/ちゃせん</p>
+			  </div>
 			</div>
+                        -->
 		</div>
 		<footer>
 			©Cpaw

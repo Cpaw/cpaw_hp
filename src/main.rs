@@ -4,6 +4,7 @@ extern crate handlebars_iron as hbs;
 extern crate staticfile;
 extern crate params;
 extern crate mount;
+extern crate rustc_serialize;
 
 use std::path::Path;
 use std::collections::HashMap;
@@ -14,54 +15,26 @@ use router::{Router, url_for};
 use hbs::{Template, HandlebarsEngine, DirectorySource};
 use staticfile::Static;
 use mount::Mount;
-
+use rustc_serialize::json;
 mod login;
 mod sql;
 mod routing;
 
 fn main() {
     
-    fn top_handler(req: &mut Request) -> IronResult<Response> {
-
-        println!("[+] Called top_handler");
-        
-        let mut resp = Response::new();
-        let mut data = HashMap::new();
-        
-        data.insert(String::from("greeting_path"),format!("{}", url_for(req, "greeting", HashMap::new())));
-
-        resp.set_mut(Template::new("index", data)).set_mut(status::Ok);
-        return Ok(resp);
-    }
-    
-    fn greet_handler(req: &mut Request) -> IronResult<Response> {
-        
-        use params::{Params, Value};
-        
-        let map = req.get_ref::<Params>().unwrap();
-        
-        return match map.find(&["name"]) {
-            Some(&Value::String(ref name)) => {
-                Ok(Response::with(
-                    (status::Ok,
-                     format!("Hello {}", name).as_str())
-                ))
-            },
-            _ => Ok(Response::with((status::Ok, "Hello world")))
-        }
-    }
-    
-    // Connect database(SQLite3)
-    sql::create_db();
-
-    
     //Create Router
     // 末尾のやつ同じだと駄目
     let mut router = Router::new();
-    router.get("/", top_handler, "top");
-    router.get("/index", top_handler, "index");
+    
+    router.get("/", routing::index, "top");
+    router.get("/index", routing::index, "index");
     router.get("/users", routing::users, "users");
-    router.post("/greet", greet_handler, "greeting");
+    router.get("/about", routing::about, "about");
+    router.get("/blog", routing::blog, "blog");
+    router.get("/random", routing::random, "random");
+    router.get("/users_json", routing::users_json, "users_json");
+    router.get("/activity", routing::activity, "activity");
+    router.get("/random", routing::random, "random");
     router.post("/login", login::login, "login");
     router.get("/register", sql::register_get, "register");
     router.post("/register", sql::register, "register"); // OK

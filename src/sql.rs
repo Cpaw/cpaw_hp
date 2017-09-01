@@ -3,6 +3,7 @@ extern crate iron;
 extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
+extern crate rustc_serialize;
 
 use std::collections::HashMap;
 use iron::prelude::*;
@@ -12,7 +13,9 @@ use iron::modifiers::{Redirect};
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
+use self::rustc_serialize::json;
 //use std::path::Path;
+
 
 #[derive(Debug)]
 pub struct User {
@@ -22,6 +25,21 @@ pub struct User {
     pub password: String,
     pub permission: u8
 }
+
+#[derive(Debug)]
+pub struct Blog {
+    pub id: u32,
+    pub title: String,
+    pub body: String,
+    pub author: String        
+}
+
+#[derive(RustcEncodable)]
+pub struct UserNames {
+    pub usernames: Vec<String>
+}
+    
+
 
 pub fn create_db() {
     
