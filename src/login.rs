@@ -3,13 +3,7 @@ extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
 
-
-use std::collections::HashMap;
-use std::error::Error;
 use iron::prelude::*;
-use iron::status;
-use router::{Router, url_for};
-use hbs::{Template, HandlebarsEngine, DirectorySource};
 use params::{Params, Value};
 
 pub fn login(req: &mut Request) -> IronResult<Response> {
