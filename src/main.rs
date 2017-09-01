@@ -36,8 +36,8 @@ fn main() {
     //router.get("/users_json", routing::users_json, "users_json");
     router.get("/activity", routing::activity, "activity");
     router.post("/login", login::login, "login");
-    router.get("/register", sql::register_get, "register");
-    router.post("/register", sql::register, "register"); // OK
+    //router.get("/register", sql::register_get, "register");
+    router.post("/register", routing::register, "register"); // OK
 
     // Mount
     let mut mount = Mount::new();

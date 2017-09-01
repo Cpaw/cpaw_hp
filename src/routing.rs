@@ -186,7 +186,6 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                 "fail"
             }
         };
-    
         println!("[+] Email {}", email);
 
         let bio = match map.find(&["bio"]) {
@@ -208,6 +207,6 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
     }
     
     let ref top_url = url_for(req, "index", HashMap::new());
-    return Ok(Response::with((status::Found, Redirect(top_url.clone()))))
+    return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
 }
 
