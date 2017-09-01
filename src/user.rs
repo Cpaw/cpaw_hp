@@ -6,8 +6,8 @@ use std::vec::Vec;
 use self::crypto::sha2::Sha512;
 use self::crypto::digest::Digest;
 
-use rusqlite::Connection;
-use rusqlite::types::ToSql;
+use self::rusqlite::Connection;
+use self::rusqlite::types::ToSql;
 
 // TODO duplicate
 static DB_PATH: &'static str = "db.sql";

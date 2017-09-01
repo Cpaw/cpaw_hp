@@ -12,8 +12,10 @@ use iron::modifiers::{Redirect};
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
-use sql::{User, Blog, UserNames};
 use rustc_serialize::json;
+use sql::Blog;
+use user::User;
+
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
@@ -34,10 +36,12 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called member");
-    
+
+
     let mut resp = Response::new();
+    /*
     let mut data = HashMap::new();
     
     let conn = Connection::open("./sqlite3.db").unwrap();
@@ -52,8 +56,17 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
         v2.push(user.unwrap());
     }
     data.insert(String::from("usernames"), v2);
+     */
     
-    resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
+    let mut v = Vec::new();
+    for user in User::all() {
+        let mut h = HashMap::new();
+        h.insert(String::from("username"), user.username);
+        h.insert(String::from("bio"), user.bio);
+        h.insert(String::from("graphic"), user.graphic);
+        v.push(h);
+    }
+    resp.set_mut(Template::new("users", v)).set_mut(status::Ok);
     
     return Ok(resp);
 }
@@ -106,7 +119,7 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
     
     return Ok(resp);
 }
-
+/*
 pub fn users_json(req: &mut Request) -> IronResult<Response> {
     
     println!("[+] Called random");
@@ -135,3 +148,66 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
     resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
     return Ok(resp);
 }
+*/
+pub fn register(req: &mut Request) -> IronResult<Response> {
+
+    //TODO 登録出来る人を制限するコードを書く
+
+    println!("[+] Called register");
+    {
+        let map = req.get_ref::<Params>().unwrap();
+        
+        let username = match map.find(&["username"]) {
+        Some(&Value::String(ref name))  => {
+            name
+        },
+        _ => {
+            "fail"
+        }
+        };
+        println!("[+] Username {}", username);
+        
+        let password = match map.find(&["password"]) {
+            Some(&Value::String(ref name))  => {
+                name
+            },
+            _ => {
+                "fail"
+            }
+        };
+    
+        println!("[+] Password {}", password);
+        
+        let email = match map.find(&["email"]) {
+            Some(&Value::String(ref name))  => {
+                name
+            },
+            _ => {
+                "fail"
+            }
+        };
+    
+        println!("[+] Email {}", email);
+
+        let bio = match map.find(&["bio"]) {
+            Some(&Value::String(ref name))  => {
+                name
+            },
+            _ => {
+                "fail"
+            }
+        };
+        println!("[+] Bio {}", bio);
+        
+        // to_string() means &str to std::string::String;
+        User::new(email.to_string(),
+                  username.to_string(),
+                  password.to_string(),
+                  bio.to_string(),
+                  username.to_string());
+    }
+    
+    let ref top_url = url_for(req, "index", HashMap::new());
+    return Ok(Response::with((status::Found, Redirect(top_url.clone()))))
+}
+
