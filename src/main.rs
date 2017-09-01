@@ -31,12 +31,12 @@ fn main() {
     router.get("/index", routing::index, "index");
     router.get("/users", routing::users, "users");
     router.get("/about", routing::about, "about");
-    router.get("/blog", routing::blog, "blog");
-    //router.get("/random", routing::random, "random");
+    //router.get("/blog", routing::blog, "blog");
+    router.get("/random", routing::random, "random");
     //router.get("/users_json", routing::users_json, "users_json");
     router.get("/activity", routing::activity, "activity");
     router.post("/login", login::login, "login");
-    //router.get("/register", sql::register_get, "register");
+    router.get("/register", sql::register_get, "register");
     router.post("/register", routing::register, "register"); // OK
 
     // Mount
