@@ -7,7 +7,7 @@ extern crate params;
 use std::collections::HashMap;
 use iron::prelude::*;
 use iron::status;
-use router::{/*Router,*/ url_for};
+use router::url_for;
 use iron::modifiers::{Redirect};
 use hbs::{Template};
 use params::{Params, Value};
@@ -15,12 +15,12 @@ use self::rusqlite::Connection;
 //use std::path::Path;
 
 #[derive(Debug)]
-struct User {
-    id: u32,
-    username: String,
-    email: String,
-    password: String,
-    permission: u8
+pub struct User {
+    pub id: u32,
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub permission: u8
 }
 
 pub fn create_db() {
@@ -57,8 +57,8 @@ pub fn create_db() {
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
     
     let mut resp = Response::new();
-    
     let mut data = HashMap::new();
+    
     data.insert(String::from("register_path"),
                 format!("{}", url_for(req, "register", HashMap::new())));
     data.insert(String::from("title"),
@@ -72,6 +72,7 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
 pub fn register(req: &mut Request) -> IronResult<Response> {
 
     let conn = Connection::open("./sqlite3.db").unwrap();
+    
     println!("[+] Called register");
     {
         let map = req.get_ref::<Params>().unwrap();
@@ -117,7 +118,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         permission: 1
     };
 
-    conn.execute("INSERT INTO user (username, password, email, permission)
+        conn.execute("INSERT INTO user (username, password, email, permission)
                   VALUES (?1, ?2, ?3, ?4)",
                  &[&me.username, &me.password, &me.email, &me.permission]).unwrap();
     }
