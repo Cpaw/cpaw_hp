@@ -58,6 +58,7 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
     data.insert(String::from("usernames"), v2);
      */
     
+    let mut data = HashMap::new();
     let mut v = Vec::new();
     for user in User::all() {
         let mut h = HashMap::new();
@@ -66,8 +67,8 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
         h.insert(String::from("graphic"), user.graphic);
         v.push(h);
     }
-    resp.set_mut(Template::new("users", v)).set_mut(status::Ok);
-    
+    data.insert(String::from("users"), v);
+    resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
     return Ok(resp);
 }
 
