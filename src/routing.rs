@@ -15,7 +15,7 @@ use self::rusqlite::Connection;
 use rustc_serialize::json;
 use sql::Blog;
 use user::User;
-
+use rand::{thread_rng, Rng};
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
@@ -141,16 +141,21 @@ pub fn users_json(req: &mut Request) -> IronResult<Response> {
     let payload = json::encode(&usernames).unwrap();
     Ok(Response::with((status::Ok, payload)))
 }
-
+*/
 pub fn random(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Called random");
+    
+    let mut data = HashMap::new();
     let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
+    let mut rng = thread_rng();
+    let mut users = User::all();
+    rng.shuffle(&mut users);
+    data.insert(String::from("users"), users);
     resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
     return Ok(resp);
 }
-*/
+
 pub fn register(req: &mut Request) -> IronResult<Response> {
 
     //TODO 登録出来る人を制限するコードを書く

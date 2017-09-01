@@ -5,17 +5,16 @@ extern crate staticfile;
 extern crate params;
 extern crate mount;
 extern crate rustc_serialize;
+extern crate rand;
 
 use std::path::Path;
-use std::collections::HashMap;
 use std::error::Error;
 use iron::prelude::*;
-use iron::status;
-use router::{Router, url_for};
-use hbs::{Template, HandlebarsEngine, DirectorySource};
+use router::Router;
+use hbs::{HandlebarsEngine, DirectorySource};
 use staticfile::Static;
 use mount::Mount;
-use rustc_serialize::json;
+
 mod login;
 mod sql;
 mod routing;
