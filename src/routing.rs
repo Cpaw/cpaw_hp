@@ -226,3 +226,13 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
     resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
     return Ok(resp);
 }
+
+pub fn timer(req: &mut Request) -> IronResult<Response> {
+    
+    println!("[+] Called timer");
+    
+    let mut resp = Response::new();
+    let data: HashMap<String, String> = HashMap::new();
+    resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
+    return Ok(resp);
+}

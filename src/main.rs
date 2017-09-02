@@ -39,6 +39,7 @@ fn main() {
     router.post("/login", login::login, "login");
     router.get("/register", sql::register_get, "register");
     router.post("/register", routing::register, "register"); // OK
+    router.get("/timer", routing::timer, "timer");
     
     // Mount
     let mut mount = Mount::new();
