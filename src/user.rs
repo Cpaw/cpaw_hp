@@ -90,7 +90,7 @@ impl User {
             }
             None => { return None; }
         };
-
+        
         Some(user)
     }
 
