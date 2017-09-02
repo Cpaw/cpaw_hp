@@ -1,5 +1,6 @@
-extern crate iron;
-extern crate router;
+#[macro_use] extern crate iron;
+extern crate iron_sessionstorage;
+#[macro_use] extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate staticfile;
 extern crate params;
@@ -14,6 +15,10 @@ use router::Router;
 use hbs::{HandlebarsEngine, DirectorySource};
 use staticfile::Static;
 use mount::Mount;
+
+use self::iron_sessionstorage::traits::*;
+use self::iron_sessionstorage::SessionStorage;
+use self::iron_sessionstorage::backends::SignedCookieBackend;
 
 mod login;
 mod sql;
@@ -49,6 +54,10 @@ fn main() {
      //Create Chain
     let mut chain = Chain::new(mount);
     
+    // Setup SessionStorage
+    let my_secret = b"verysecret".to_vec(); // TODO Secret
+    chain.link_around(SessionStorage::new(SignedCookieBackend::new(my_secret)));
+
     // Add HandlerbarsEngine to middleware Chain
     let mut hbse = HandlebarsEngine::new();
     
