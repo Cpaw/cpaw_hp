@@ -41,7 +41,7 @@ fn main() {
     //router.get("/users_json", routing::users_json, "users_json");
     router.get("/activity", routing::activity, "activity");
     router.get("/login", routing::login, "login");
-    router.post("/login", login::login, "login");
+    router.post("/login", login::login_post, "login");
     router.get("/register", sql::register_get, "register");
     router.post("/register", routing::register, "register"); // OK
     router.get("/timer", routing::timer, "timer");
