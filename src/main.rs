@@ -19,6 +19,7 @@ mod login;
 mod sql;
 mod routing;
 mod user;
+mod sqlite_test;
 
 fn main() {
     
@@ -34,10 +35,11 @@ fn main() {
     router.get("/random", routing::random, "random");
     //router.get("/users_json", routing::users_json, "users_json");
     router.get("/activity", routing::activity, "activity");
+    router.get("/login", routing::login, "login");
     router.post("/login", login::login, "login");
     router.get("/register", sql::register_get, "register");
     router.post("/register", routing::register, "register"); // OK
-
+    
     // Mount
     let mut mount = Mount::new();
     mount.mount("/", router);
@@ -58,7 +60,9 @@ fn main() {
     }
 
     chain.link_after(hbse);
-    
+
+
+    //sqlite_test::test_main();
     println!("[+] Listen on localhost:3000");
     Iron::new(chain).http("localhost:3000").unwrap();
 }

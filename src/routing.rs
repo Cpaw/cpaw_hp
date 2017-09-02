@@ -99,7 +99,7 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
              title: row.get(1),
              author: row.get(2),
              body: row.get(3),
-        }
+         }
     }).unwrap();
     
     let mut v = Vec::new();
@@ -217,3 +217,12 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
     return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
 }
 
+pub fn login(req: &mut Request) -> IronResult<Response> {
+    
+    println!("[+] Called login");
+    
+    let mut resp = Response::new();
+    let data: HashMap<String, String> = HashMap::new();
+    resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
+    return Ok(resp);
+}
