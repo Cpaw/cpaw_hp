@@ -3,6 +3,7 @@ extern crate iron;
 extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
+extern crate crypto;
 
 use std::collections::HashMap;
 use iron::prelude::*;
@@ -17,6 +18,7 @@ use sql::Blog;
 use user::User;
 use rand::{thread_rng, Rng};
 use std::option::Option;
+use std::env;
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
@@ -172,6 +174,28 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
     println!("[+] Called register");
     {
         let map = req.get_ref::<Params>().unwrap();
+
+        let token = match map.find(&["invite_token"]) {
+            Some(&Value::String(ref name)) => Some(name),
+            _ => None,
+        };
+        
+        if token.is_none() {
+            println!("[!] Invite token is None");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
+        if token.unwrap() != env!("CPAW_TOKEN") {
+            println!("[!] Invalid token");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid token");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
         
         let username = match map.find(&["username"]){
             Some(&Value::String(ref name))  => Some(name),
@@ -182,6 +206,14 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             println!("[!] Username is None");
             let mut h = HashMap::new();
             h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
+        if username.unwrap() == "" {
+            println!("[!] Username is empty");
+            let mut h = HashMap::new();
+            h.insert("result", "parameter is empty");
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
@@ -201,6 +233,14 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                                       json::encode(&h).unwrap())));
         }
         
+        if password.unwrap() == "" {
+            println!("[!] Password is empty");
+            let mut h = HashMap::new();
+            h.insert("result", "parameter is empty");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
         println!("[+] Password {}", password.unwrap());
         
         let email = match map.find(&["email"]) {
@@ -212,6 +252,14 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             println!("[!] Email is None");
             let mut h = HashMap::new();
             h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+
+        if email.unwrap() == "" {
+            println!("[!] Email is empty");
+            let mut h = HashMap::new();
+            h.insert("result", "parameter is empty");
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
@@ -227,6 +275,14 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             println!("[!] bio is None");
             let mut h = HashMap::new();
             h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+
+        if bio.unwrap() == "" {
+            println!("[!] Bio is empty");
+            let mut h = HashMap::new();
+            h.insert("result", "parameter is empty");
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
@@ -264,3 +320,17 @@ pub fn timer(req: &mut Request) -> IronResult<Response> {
     resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
     return Ok(resp);
 }
+
+pub fn invite_token(req: &mut Request) -> IronResult<Response> {
+
+    //TODO 起動時にCPAW_TOKEN環境変数を定義する
+    //コードを公開しない前提ならハードコーディングで良い?
+    let mut h = HashMap::new();
+    let token = env!("CPAW_TOKEN");
+    println!("{}", token);
+    h.insert("token", token);
+    return Ok(Response::with((status::Ok,
+                              json::encode(&h).unwrap())));
+    
+}
+
