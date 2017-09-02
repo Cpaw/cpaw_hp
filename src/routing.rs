@@ -16,6 +16,7 @@ use rustc_serialize::json;
 use sql::Blog;
 use user::User;
 use rand::{thread_rng, Rng};
+use std::option::Option;
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
@@ -157,60 +158,87 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn register(req: &mut Request) -> IronResult<Response> {
-
+    
+    let mut resp = Response::new();
+    
     //TODO 登録出来る人を制限するコードを書く
-
+    if req.method.to_string() == "GET" {
+        let mut data = HashMap::new();
+        data.insert("", "");
+        resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
+        return Ok(resp);
+    }
+    
     println!("[+] Called register");
     {
         let map = req.get_ref::<Params>().unwrap();
         
-        let username = match map.find(&["username"]) {
-        Some(&Value::String(ref name))  => {
-            name
-        },
-        _ => {
-            "fail"
-        }
+        let username = match map.find(&["username"]){
+            Some(&Value::String(ref name))  => Some(name),
+            _ => None,
         };
-        println!("[+] Username {}", username);
+        
+        if username.is_none() {
+            println!("[!] Username is None");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
+        println!("[+] Username {}", username.unwrap());
         
         let password = match map.find(&["password"]) {
-            Some(&Value::String(ref name))  => {
-                name
-            },
-            _ => {
-                "fail"
-            }
+            Some(&Value::String(ref name))  => Some(name),
+            _ => None,
         };
-    
-        println!("[+] Password {}", password);
+        
+        if password.is_none() {
+            println!("[!] Password is None");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
+        println!("[+] Password {}", password.unwrap());
         
         let email = match map.find(&["email"]) {
-            Some(&Value::String(ref name))  => {
-                name
-            },
-            _ => {
-                "fail"
-            }
+            Some(&Value::String(ref name))  => Some(name),
+            _ => None,
         };
-        println!("[+] Email {}", email);
+
+        if email.is_none() {
+            println!("[!] Email is None");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+        
+        println!("[+] Email {}", email.unwrap());
 
         let bio = match map.find(&["bio"]) {
-            Some(&Value::String(ref name))  => {
-                name
-            },
-            _ => {
-                "fail"
-            }
+            Some(&Value::String(ref name))  => Some(name),
+            _ => None,
         };
-        println!("[+] Bio {}", bio);
+
+        if bio.is_none() {
+            println!("[!] bio is None");
+            let mut h = HashMap::new();
+            h.insert("result", "invalid parameter");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
         
+        println!("[+] Bio {}", bio.unwrap());
+
         // to_string() means &str to std::string::String;
-        User::new(email.to_string(),
-                  username.to_string(),
-                  password.to_string(),
-                  bio.to_string(),
-                  username.to_string());
+        User::new(email.unwrap().to_string(),
+                  username.unwrap().to_string(),
+                  password.unwrap().to_string(),
+                  bio.unwrap().to_string(),
+                  username.unwrap().to_string());
     }
     
     let ref top_url = url_for(req, "index", HashMap::new());
