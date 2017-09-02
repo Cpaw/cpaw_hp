@@ -58,12 +58,12 @@ impl User {
         users
     }
 
-    pub fn find_by(key: &str, value: &ToSql) -> User {
+    pub fn find_by(key: &str, value: &ToSql) -> Option<User> {
         let conn = Connection::open(DB_PATH).unwrap();
         // TODO Danger
         let mut stmt = conn.prepare(&format!("SELECT id, email, username, password, permission,
                                              bio, graphic FROM user WHERE {} = ?", key)[..]).unwrap();
-        let user = stmt.query_map(&[value], |row| {
+        let result_users = stmt.query_map(&[value], |row| {
             User {
                 id: row.get(0),
                 email: row.get(1),
@@ -73,11 +73,28 @@ impl User {
                 bio: row.get(5),
                 graphic: row.get(6),
             }
-        }).unwrap().nth(0).unwrap().unwrap();
-        user
+        });
+
+        // なぜかmutが必要
+        let mut users = match result_users {
+            Ok(users) => { users }
+            Err(e) => { return None; }
+        };
+
+        let user = match users.nth(0) {
+            Some(result_first_user) => {
+                match result_first_user {
+                    Ok(first_user) => { first_user },
+                    Err(e) => { return None; }
+                }
+            }
+            None => { return None; }
+        };
+
+        Some(user)
     }
 
-    pub fn find(id: i32) -> User {
+    pub fn find(id: i32) -> Option<User> {
         User::find_by(&"id", &id)
     }
 
@@ -88,7 +105,7 @@ impl User {
     }
 
     pub fn new(email: String, username: String, password: String,
-               bio: String, graphic: String) -> User {
+               bio: String, graphic: String) -> Option<User> {
         let mut sha = Sha512::new();
         sha.input_str(&password);
 
