@@ -61,6 +61,13 @@ pub fn is_logged_in(req: &mut Request) -> bool {
 }
 
 pub fn login_get(req: &mut Request) -> IronResult<Response> {
+
+    if is_logged_in(req) {
+        // if try!(req.session().get::<UserSession>()).is_some() {
+        // Already logged in
+        return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));
+    }
+    
     let mut resp = Response::new();
     let mut data = HashMap::new();
     data.insert("", "");

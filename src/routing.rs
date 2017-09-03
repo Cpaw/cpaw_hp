@@ -97,6 +97,7 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
+    
     let mut resp = Response::new();
     let mut data = HashMap::new();
     data.insert("", "");
