@@ -45,6 +45,22 @@ impl User {
         }
     }
 
+    // 変更を反映する
+    pub fn update(&self) -> bool {
+        let conn = get_connection();
+        let result = conn.execute(
+            "UPDATE users SET email=?2, username=?3, password=?4, permission=?5,
+                              bio=?6, graphic=?7
+             WHERE id=?1",
+            &[&self.id, &self.email, &self.username, &self.password,
+                &self.permission, &self.bio, &self.graphic]);
+
+        match result {
+            Ok(_) => true,
+            Err(_) => false
+        }
+    }
+
     pub fn all() -> Vec<User> {
         let conn = get_connection();
         let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic FROM users").unwrap();
