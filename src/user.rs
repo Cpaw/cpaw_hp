@@ -2,6 +2,7 @@ extern crate crypto;
 extern crate rusqlite;
 extern crate serde;
 
+use std::env;
 use std::vec::Vec;
 
 use self::crypto::sha2::Sha512;
@@ -12,7 +13,11 @@ use self::rusqlite::types::ToSql;
 
 use self::serde::ser::{Serialize, Serializer, SerializeStruct};
 
-static DB_PATH: &'static str = "db.sql";
+
+pub fn get_connection() -> Connection {
+    let db_path = env::var("DATABASE_URL").expect("Please set 'DATABASE_URL' environment variable");
+    Connection::open(db_path).unwrap()
+}
 
 #[derive(Debug)]
 pub struct User {
@@ -27,7 +32,7 @@ pub struct User {
 
 impl User {
     pub fn save(&self) -> bool {
-        let conn = Connection::open(DB_PATH).unwrap();
+        let conn = get_connection();
         conn.execute("INSERT INTO users (email, username, password, permission, bio, graphic)
                   VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                   &[&self.email, &self.username, &self.password, &self.permission, &self.bio, &self.graphic]).unwrap();
@@ -35,7 +40,7 @@ impl User {
     }
 
     pub fn all() -> Vec<User> {
-        let conn = Connection::open(DB_PATH).unwrap();
+        let conn = get_connection();
         let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic FROM users").unwrap();
         let user_iter = stmt.query_map(&[], |row| {
             User {
@@ -58,7 +63,7 @@ impl User {
     }
 
     pub fn find_by(key: &str, value: &ToSql) -> Option<User> {
-        let conn = Connection::open(DB_PATH).unwrap();
+        let conn = get_connection();
         // TODO Danger
         let mut stmt = conn.prepare(&format!("SELECT id, email, username, password, permission,
                                              bio, graphic FROM users WHERE {} = ?", key)[..]).unwrap();
@@ -98,7 +103,7 @@ impl User {
     }
 
     pub fn delete(id: i32) -> bool {
-        let conn = Connection::open(DB_PATH).unwrap();
+        let conn = get_connection();
         conn.execute("DELETE FROM users WHERE id = ?1", &[&id]).is_ok()
     }
 

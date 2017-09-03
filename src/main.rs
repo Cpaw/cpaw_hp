@@ -10,9 +10,12 @@ extern crate rand;
 extern crate handlebars;
 #[macro_use] extern crate serde_json;
 #[macro_use] extern crate maplit;
+extern crate dotenv;
 
 use std::path::Path;
 use std::error::Error;
+use std::env;
+
 use iron::prelude::*;
 use router::Router;
 use hbs::{HandlebarsEngine, DirectorySource};
@@ -31,7 +34,9 @@ mod routing;
 mod user;
 
 fn main() {
-    
+    // .envの環境変数読み込み
+    dotenv::dotenv().ok();
+
     //Create Router
     // 末尾のやつ同じだと駄目
     let mut router = Router::new();
