@@ -1,6 +1,7 @@
 extern crate iron;
 extern crate iron_sessionstorage;
 extern crate params;
+extern crate crypto;
 
 use iron::prelude::*;
 use iron::status;
@@ -8,19 +9,12 @@ use iron::modifiers::Redirect;
 use std::collections::HashMap;
 use hbs::{Template};
 use self::iron_sessionstorage::traits::*;
-use self::iron_sessionstorage::SessionStorage;
-use self::iron_sessionstorage::backends::SignedCookieBackend;
 use params::{Params, Value};
 use router::url_for;
-
-
-extern crate crypto;
-extern crate rusqlite;
-extern crate serde;
 use self::crypto::sha2::Sha512;
 use self::crypto::digest::Digest;
-use user::User;
 
+use user::User;
 
 // セッションに保存される情報
 struct UserSession {
@@ -39,24 +33,31 @@ impl iron_sessionstorage::Value for UserSession {
     }
 }
 
-pub fn logged_in(req: &mut Request) -> bool {
-    // Result<UserSession>を取り出してNoneならfalse戻して関数終了
+pub fn current_user(req: &mut Request) -> Result<User, String> {
     let opt_user_session = match req.session().get::<UserSession>() {
         Ok(opt_us) => { opt_us },
-        Err(e) => { return false; }
+        Err(_) => { return Err("Session can not get".to_string()); }
     };
 
     let user_id_str =  match opt_user_session {
         Some(us) => { us.id },
-        None => { return false; }
+        None => { return Err("UserSession not found in cookie".to_string()); }
     };
 
     let user_id = match user_id_str.parse::<i32>() {
         Ok(id) => { id },
-        Err(e) => { return false }
+        Err(_) => { return Err("Failed to convert user_id to i32 from String".to_string()); }
     };
 
-    User::find(user_id).is_some()
+    let rslt_user = match User::find(user_id) {
+        Some(user) => { Ok(user) },
+        None => { return Err("User not found".to_string()); }
+    };
+    rslt_user
+}
+
+pub fn is_logged_in(req: &mut Request) -> bool {
+    current_user(req).is_ok()
 }
 
 pub fn login(req: &mut Request) -> IronResult<Response> {
@@ -64,7 +65,7 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
     
     // セッションにUserSessionがあるなら
     // println!("{}", req.session().get::<UserSession>().unwrap().unwrap().id);
-    if logged_in(req) {
+    if is_logged_in(req) {
     // if try!(req.session().get::<UserSession>()).is_some() {
         // Already logged in
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "top")))));
@@ -78,13 +79,13 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
         return Ok(resp);
     }
     
-    // チェックとかしてない
     let map = req.get_ref::<Params>().unwrap().clone();
 
-    let email = match map.find(&["email"]) {
+    let email:&String = match map.find(&["email"]) {
         Some(&Value::String(ref value))  => { value },
-        _ => { "fail" }
+        _ => { return Ok(Response::with((status::Ok, "Login: Please email"))); }
     };
+    
     // let email = {
     //     println!("Enter email block");
     //     let formdata = iexpect!(req.get_ref::<UrlEncodedBody>().ok());
@@ -92,77 +93,38 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
     //     iexpect!(formdata.get("email"))[0].to_owned()
     // };
     println!("[+] Email {}", email);
-
-    let password = match map.find(&["password"]) {
+    
+    let password:&String = match map.find(&["password"]) {
         Some(&Value::String(ref value))  => { value },
-        _ => { "fail" }
+        _ => { return Ok(Response::with((status::Ok, "Login: Please password"))); }
     };
-    // let password = {
-    //     let formdata = iexpect!(req.get_ref::<UrlEncodedBody>().ok());
-    //     iexpect!(formdata.get("password"))[0].to_owned()
-    // };
-    println!("[ ] password {}", password);
+    println!("[+] Password {}", password);
 
     let mut sha = Sha512::new();
     sha.input_str(&password);
     let password_hash = sha.result_str();
 
     // 見つからないとOption None
-    let user: User = match User::find_by("email", &email) {
+    let user: User = match User::find_by("email", email) {
         Some(user) => { user },
-        None => { return Ok(Response::with((status::Ok, "User not found"))); }
+        None => { return Ok(Response::with((status::Ok, "Login: User not found"))); }
     };
 
     if user.password != password_hash {
         println!("Invalid password");
         // passwordが一致しなかったら適当にリダイレクト
-        return Ok(Response::with((status::Ok, "Login Failed: invalid password")));
+        return Ok(Response::with((status::Ok, "Login: invalid password")));
     }
 
-    println!("[+] Save session");
+    println!("[ ] Save session");
     // セッションにユーザー名を保存
     try!( req.session().set(UserSession { id: user.id.to_string() }) );
 
     // '/'にリダイレクト
-    Ok(Response::with((status::Found, "Login Success")))
+    Ok(Response::with((status::Found, "Login: Success")))
 }
 
 pub fn logout(req: &mut Request) -> IronResult<Response> {
     try!(req.session().clear());
-    Ok(Response::with((status::Found, Redirect(url_for!(req, "greet")))))
+    Ok(Response::with((status::Ok, Redirect(url_for!(req, "top")))))
 }
-
-pub fn greet(req: &mut Request) -> IronResult<Response> {
-    let login = iexpect!(
-        req.session().get::<UserSession>().ok().and_then(|x| x),
-        (
-            status::Unauthorized,
-            "text/html".parse::<iron::mime::Mime>().unwrap(),
-            "<a href=/login>Log in</a>"
-        )
-    );
-
-    Ok(Response::with((
-        status::Ok,
-        "text/html".parse::<iron::mime::Mime>().unwrap(),
-        format!("Hello, {}! <br/>\n\
-        <form method=post action=/logout>\n\
-        <input type=submit value='Log out' />\n\
-        </form>", login.id)
-    )))
-}
-
-// fn main() {
-//     let router = router!(
-//         greet: get "/" => greet,
-//         login: get "/login" => login,
-//         login_post: post "/login" => login_post,
-//         logout: post "/logout" => logout,
-//     );
-//
-//     let my_secret = b"verysecret".to_vec();
-//     let mut ch = Chain::new(router);
-//     ch.link_around(SessionStorage::new(SignedCookieBackend::new(my_secret)));
-//     let _res = Iron::new(ch).http("localhost:8080");
-//     println!("Listening on 8080.");
-// }

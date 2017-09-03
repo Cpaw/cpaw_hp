@@ -24,7 +24,6 @@ mod login;
 mod sql;
 mod routing;
 mod user;
-mod sqlite_test;
 
 fn main() {
     
