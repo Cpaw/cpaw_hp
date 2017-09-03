@@ -6,10 +6,11 @@ extern crate params;
 extern crate crypto;
 
 use std::collections::HashMap;
+use std::path::Path;
 use iron::prelude::*;
-use iron::status;
 use router::url_for;
-use iron::modifiers::{Redirect};
+use iron::{status,headers};
+use iron::modifiers::{Redirect,Header};
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
@@ -19,6 +20,7 @@ use user::User;
 use rand::{thread_rng, Rng};
 use std::option::Option;
 use std::env;
+use handlebars::Handlebars;
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
@@ -349,4 +351,44 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
     return Ok(Response::with((status::Ok,
                               json::encode(&h).unwrap())));
     
+}
+
+pub fn template_html(filename :&str) -> Handlebars {
+    let mut handlebars = Handlebars::new();
+    
+    handlebars
+        .register_template_file(filename, &Path::new(&["src/templates/", filename, ".hbs"].connect("")))
+        .ok()
+        .unwrap();
+    
+    // like layout.erb
+    handlebars
+        .register_template_file("base", &Path::new("src/templates/base.hbs"))
+        .ok()
+        .unwrap();
+    handlebars
+}
+
+pub fn temp_test(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "test_about";
+    let mut resp = Response::new();
+    
+    let mut handlebars = template_html(filename);
+    let data1 =
+        btreemap! {
+            "parent".to_string() => "base".to_string()
+        };
+
+    let ret_html = handlebars.render(filename, &data1).unwrap_or_else(
+        |e| format!("{}", e)
+    );
+
+    resp
+        .set_mut(ret_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
+
 }
