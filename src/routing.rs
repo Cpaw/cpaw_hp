@@ -159,17 +159,16 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
     return Ok(resp);
 }
 
-pub fn register(req: &mut Request) -> IronResult<Response> {
-    
+pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let mut resp = Response::new();
+    let mut data = HashMap::new();
+    data.insert("", "");
+    resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
+    return Ok(resp);
+}
+
+pub fn register_post(req: &mut Request) -> IronResult<Response> {
     
-    //TODO 登録出来る人を制限するコードを書く
-    if req.method.to_string() == "GET" {
-        let mut data = HashMap::new();
-        data.insert("", "");
-        resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
-        return Ok(resp);
-    }
     
     println!("[+] Called register");
     {
@@ -327,16 +326,6 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
     
     let ref top_url = url_for(req, "index", HashMap::new());
     return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
-}
-
-pub fn login(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called login");
-    
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
-    return Ok(resp);
 }
 
 pub fn timer(req: &mut Request) -> IronResult<Response> {

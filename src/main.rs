@@ -37,14 +37,13 @@ fn main() {
     router.get("/about", routing::about, "about");
     //router.get("/blog", routing::blog, "blog");
     router.get("/random", routing::random, "random");
-    //router.get("/users_json", routing::users_json, "users_json");
     router.get("/invite_token.json", routing::invite_token, "invite_token");
     router.get("/activity", routing::activity, "activity");
-    router.get("/login", login::login, "login");
-    router.post("/login", login::login, "login");
+    router.get("/login", login::login_get, "login");
+    router.post("/login", login::login_post, "login");
     router.get("/logout", login::logout, "logout");
-    router.get("/register", routing::register, "register");
-    router.post("/register", routing::register, "register");
+    router.get("/register", routing::register_get, "register");
+    router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
     
     // Mount
