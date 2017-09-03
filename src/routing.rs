@@ -4,6 +4,7 @@ extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate crypto;
+extern crate time;
 
 use std::collections::HashMap;
 use iron::prelude::*;
@@ -46,7 +47,7 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
     let mut resp = Response::new();
     /*
     let mut data = HashMap::new();
-    
+
     let conn = Connection::open("./sqlite3.db").unwrap();
     let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
     let user_iter = stmt.query_map(&[], |row| {
@@ -60,7 +61,7 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
     }
     data.insert(String::from("usernames"), v2);
      */
-    
+
     let mut data = HashMap::new();
     // let mut v = Vec::new();
     // for user in User::all() {
@@ -77,58 +78,62 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn about(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called about");
 
     let mut resp = Response::new();
     let data: HashMap<String, String> = HashMap::new();
     resp.set_mut(Template::new("about", data)).set_mut(status::Ok);
-    
+
     return Ok(resp);
 }
 
 pub fn blog(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called blog");
 
     let mut resp = Response::new();
     let mut data = HashMap::new();
-    
+
     let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT id, title, author, body FROM blog").unwrap();
+    let mut stmt = conn.prepare("SELECT id, title, author, body, time_posted, time_updated FROM blog").unwrap();
     let user_iter = stmt.query_map(&[], |row| {
          Blog {
              id: row.get(0),
              title: row.get(1),
              author: row.get(2),
              body: row.get(3),
+             time_posted: row.get(4),
+             time_updated: row.get(5)
          }
     }).unwrap();
-    
+
     let mut v = Vec::new();
     for user in user_iter {
-        
+
         let mut hash: HashMap<String, String> = HashMap::new();
         let userUnwrapped = user.unwrap();
-        
+
         hash.insert(String::from("id"), userUnwrapped.id.to_string());
         hash.insert(String::from("title"), userUnwrapped.title);
         hash.insert(String::from("body"), userUnwrapped.body);
         hash.insert(String::from("author"), userUnwrapped.author);
+        hash.insert(Timespec::from("time_posted"), userUnwrapped.time_posted);
+        hash.insert(Timespec::from("time_updated"), userUnwrapped.time_updated);
         v.push(hash);
-        
+
     }
-    
+
     data.insert(String::from("blog"), v);
     resp.set_mut(Template::new("blog", data)).set_mut(status::Ok);
-    
+
     return Ok(resp);
 }
 /*
 pub fn users_json(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called random");
-    
+
     let conn = Connection::open("./sqlite3.db").unwrap();
     let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
     let user_iter = stmt.query_map(&[], |row| {
@@ -148,7 +153,7 @@ pub fn users_json(req: &mut Request) -> IronResult<Response> {
 pub fn random(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Called random");
-    
+
     let mut data = HashMap::new();
     let mut resp = Response::new();
     let mut rng = thread_rng();
@@ -160,9 +165,9 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn register(req: &mut Request) -> IronResult<Response> {
-    
+
     let mut resp = Response::new();
-    
+
     //TODO 登録出来る人を制限するコードを書く
     if req.method.to_string() == "GET" {
         let mut data = HashMap::new();
@@ -170,7 +175,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
         return Ok(resp);
     }
-    
+
     println!("[+] Called register");
     {
         let map = req.get_ref::<Params>().unwrap();
@@ -179,7 +184,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             Some(&Value::String(ref name)) => Some(name),
             _ => None,
         };
-        
+
         if token.is_none() {
             println!("[!] Invite token is None");
             let mut h = HashMap::new();
@@ -187,7 +192,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         if token.unwrap() != env!("CPAW_TOKEN") {
             println!("[!] Invalid token");
             let mut h = HashMap::new();
@@ -195,13 +200,13 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
-        
+
+
         let username = match map.find(&["username"]){
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
         };
-        
+
         if username.is_none() {
             println!("[!] Username is None");
             let mut h = HashMap::new();
@@ -209,7 +214,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         if username.unwrap() == "" {
             println!("[!] Username is empty");
             let mut h = HashMap::new();
@@ -217,14 +222,14 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         println!("[+] Username {}", username.unwrap());
-        
+
         let password = match map.find(&["password"]) {
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
         };
-        
+
         if password.is_none() {
             println!("[!] Password is None");
             let mut h = HashMap::new();
@@ -232,7 +237,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         if password.unwrap() == "" {
             println!("[!] Password is empty");
             let mut h = HashMap::new();
@@ -240,9 +245,9 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         println!("[+] Password {}", password.unwrap());
-        
+
         let email = match map.find(&["email"]) {
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
@@ -281,7 +286,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         println!("[+] Email {}", email.unwrap());
 
         let bio = match map.find(&["bio"]) {
@@ -304,12 +309,12 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
+
         println!("[+] Bio {}", bio.unwrap());
 
 
         let flag = User::find_by(&"email", email.unwrap());
-        if !flag.is_none() {            
+        if !flag.is_none() {
             println!("[!] Already registerd");
             let mut h = HashMap::new();
             h.insert("result", "already registered");
@@ -324,15 +329,15 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                   bio.unwrap().to_string(),
                   username.unwrap().to_string());
     }
-    
+
     let ref top_url = url_for(req, "index", HashMap::new());
     return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
 }
 
 pub fn login(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called login");
-    
+
     let mut resp = Response::new();
     let data: HashMap<String, String> = HashMap::new();
     resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
@@ -340,9 +345,9 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn timer(req: &mut Request) -> IronResult<Response> {
-    
+
     println!("[+] Called timer");
-    
+
     let mut resp = Response::new();
     let data: HashMap<String, String> = HashMap::new();
     resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
@@ -359,5 +364,5 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
     h.insert("token", token);
     return Ok(Response::with((status::Ok,
                               json::encode(&h).unwrap())));
-    
+
 }

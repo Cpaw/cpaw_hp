@@ -4,6 +4,7 @@ extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate rustc_serialize;
+extern crate time;
 
 use std::collections::HashMap;
 use iron::prelude::*;
@@ -14,6 +15,7 @@ use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
 use self::rustc_serialize::json;
+use self::time::Timespec;
 //use std::path::Path;
 
 
@@ -31,18 +33,20 @@ pub struct Blog {
     pub id: u32,
     pub title: String,
     pub body: String,
-    pub author: String        
+    pub author: String,
+    pub time_posted: Timespec,
+    pub time_updated: Timespec
 }
 
 #[derive(RustcEncodable)]
 pub struct UserNames {
     pub usernames: Vec<String>
 }
-    
+
 
 
 pub fn create_db() {
-    
+
 }
 
 /*
@@ -52,7 +56,7 @@ pub fn create_db() {
                   email           TEXT NOT NULL,
                   password        TEXT NOT NULL,
                   permission      INTEGER
-                  
+
     )", &[]).unwrap();
             let me = User {
                 id: 0,
@@ -68,33 +72,33 @@ pub fn create_db() {
 
     }
 
-    
-    // from post parameter         
+
+    // from post parameter
      */
 
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
-    
+
     let mut resp = Response::new();
     let mut data = HashMap::new();
-    
+
     data.insert(String::from("register_path"),
                 format!("{}", url_for(req, "register", HashMap::new())));
     data.insert(String::from("title"),
                 format!("{}", url_for(req, "register", HashMap::new())));
-        
+
     resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
-    
+
     return Ok(resp);
 }
 
 pub fn register(req: &mut Request) -> IronResult<Response> {
 
     let conn = Connection::open("./sqlite3.db").unwrap();
-    
+
     println!("[+] Called register");
     {
         let map = req.get_ref::<Params>().unwrap();
-        
+
         let username = match map.find(&["username"]) {
         Some(&Value::String(ref name))  => {
             name
@@ -104,7 +108,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         }
         };
     println!("[+] Username {}", username);
-    
+
     let password = match map.find(&["password"]) {
         Some(&Value::String(ref name))  => {
             name
@@ -113,9 +117,9 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             "fail"
         }
     };
-    
+
     println!("[+] Password {}", password);
-    
+
     let email = match map.find(&["email"]) {
         Some(&Value::String(ref name))  => {
             name
@@ -124,7 +128,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
             "fail"
         }
     };
-    
+
     println!("[+] Email {}", email);
 
     // to_string() means &str to std::string::String;
@@ -140,10 +144,8 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                   VALUES (?1, ?2, ?3, ?4)",
                  &[&me.username, &me.password, &me.email, &me.permission]).unwrap();
     }
-    
+
     let ref top_url = url_for(req, "index", HashMap::new());
     return Ok(Response::with((status::Found, Redirect(top_url.clone()))))
-        
+
 }
-
-

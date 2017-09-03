@@ -26,11 +26,11 @@ mod routing;
 mod user;
 
 fn main() {
-    
+
     //Create Router
     // 末尾のやつ同じだと駄目
     let mut router = Router::new();
-    
+
     router.get("/", routing::index, "top");
     router.get("/index", routing::index, "index");
     router.get("/users", routing::users, "users");
@@ -46,7 +46,7 @@ fn main() {
     router.get("/register", routing::register, "register");
     router.post("/register", routing::register, "register");
     router.get("/timer", routing::timer, "timer");
-    
+
     // Mount
     let mut mount = Mount::new();
     mount.mount("/", router);
@@ -54,18 +54,18 @@ fn main() {
 
      //Create Chain
     let mut chain = Chain::new(mount);
-    
+
     // Setup SessionStorage
     let my_secret = b"verysecret".to_vec(); // TODO Secret
     chain.link_around(SessionStorage::new(SignedCookieBackend::new(my_secret)));
 
     // Add HandlerbarsEngine to middleware Chain
     let mut hbse = HandlebarsEngine::new();
-    
+
     hbse.add(Box::new(
         DirectorySource::new("./src/templates/", ".hbs")
     ));
-    
+
     if let Err(r) = hbse.reload() {
         panic!("{}", r.description());
     }
