@@ -350,3 +350,5 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
                               json::encode(&h).unwrap())));
     
 }
+
+pub fn temp_test()
