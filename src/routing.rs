@@ -4,91 +4,25 @@ extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate crypto;
-extern crate time;
+extern crate serde_json;
 
+use std::env;
+use std::option::Option;
+use std::path::Path;
 use std::collections::HashMap;
 use iron::prelude::*;
-use iron::status;
+use iron::{headers, status};
+use iron::modifiers::{Redirect,Header};
 use router::url_for;
-use iron::modifiers::{Redirect};
+use handlebars::Handlebars;
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
 use rustc_serialize::json;
-use sql::Blog;
 use user::User;
 use rand::{thread_rng, Rng};
-use std::option::Option;
-use std::env;
-use self::time::Timespec;
 
-pub fn index(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called index");
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("index", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn activity(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called activity");
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("activity", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn users(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called member");
-
-
-    let mut resp = Response::new();
-    /*
-    let mut data = HashMap::new();
-
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-        let a:String = row.get(0);
-        a
-    }).unwrap();
-
-    let mut v2 = Vec::new();
-    for user in user_iter {
-        v2.push(user.unwrap());
-    }
-    data.insert(String::from("usernames"), v2);
-     */
-
-    let mut data = HashMap::new();
-    // let mut v = Vec::new();
-    // for user in User::all() {
-    //     let mut h = HashMap::new();
-    //     h.insert(String::from("username"), user.username);
-    //     h.insert(String::from("bio"), user.bio);
-    //     h.insert(String::from("graphic"), user.graphic);
-    //     v.push(h);
-    // }
-
-    data.insert(String::from("users"), User::all());
-    resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn about(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called about");
-
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("about", data)).set_mut(status::Ok);
-
-    return Ok(resp);
-}
-
+/*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Called blog");
@@ -130,6 +64,7 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
 
     return Ok(resp);
 }
+*/
 /*
 pub fn users_json(req: &mut Request) -> IronResult<Response> {
 
@@ -165,17 +100,29 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
     return Ok(resp);
 }
 
-pub fn register(req: &mut Request) -> IronResult<Response> {
+pub fn register_get(req: &mut Request) -> IronResult<Response> {
 
+    let filename = "register.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "register": true,
+    });
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
     let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
 
-    //TODO 登録出来る人を制限するコードを書く
-    if req.method.to_string() == "GET" {
-        let mut data = HashMap::new();
-        data.insert("", "");
-        resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
-        return Ok(resp);
-    }
+    return Ok(resp);
+}
+
+pub fn register_post(req: &mut Request) -> IronResult<Response> {
+
 
     println!("[+] Called register");
     {
@@ -194,7 +141,7 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                                       json::encode(&h).unwrap())));
         }
 
-        if token.unwrap() != env!("CPAW_TOKEN") {
+        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'DATABASE_URL' environment variable") {
             println!("[!] Invalid token");
             let mut h = HashMap::new();
             h.insert("result", "invalid token");
@@ -313,36 +260,28 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
 
         println!("[+] Bio {}", bio.unwrap());
 
-
-        let flag = User::find_by(&"email", email.unwrap());
-        if !flag.is_none() {
-            println!("[!] Already registerd");
-            let mut h = HashMap::new();
-            h.insert("result", "already registered");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-
         // to_string() means &str to std::string::String;
-        User::new(email.unwrap().to_string(),
+        let result = User::new(email.unwrap().to_string(),
                   username.unwrap().to_string(),
                   password.unwrap().to_string(),
                   bio.unwrap().to_string(),
                   username.unwrap().to_string());
+
+        match result {
+            Ok(_) => { println!("[+] User registered"); }
+            Err(err_str) => {
+                println!("{}", err_str);
+
+                let mut h = HashMap::new();
+                h.insert("result", err_str);
+                return Ok(Response::with(
+                            (status::Ok, json::encode(&h).unwrap())));
+            }
+        }
     }
 
     let ref top_url = url_for(req, "index", HashMap::new());
     return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
-}
-
-pub fn login(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called login");
-
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
-    return Ok(resp);
 }
 
 pub fn timer(req: &mut Request) -> IronResult<Response> {
@@ -355,15 +294,98 @@ pub fn timer(req: &mut Request) -> IronResult<Response> {
     return Ok(resp);
 }
 
-pub fn invite_token(req: &mut Request) -> IronResult<Response> {
+pub fn template_html(filename: &str) -> Handlebars {
+    let mut handlebars = Handlebars::new();
 
-    //TODO 起動時にCPAW_TOKEN環境変数を定義する
-    //コードを公開しない前提ならハードコーディングで良い?
-    let mut h = HashMap::new();
-    let token = env!("CPAW_TOKEN");
-    println!("{}", token);
-    h.insert("token", token);
-    return Ok(Response::with((status::Ok,
-                              json::encode(&h).unwrap())));
+    handlebars
+        .register_template_file(filename, &Path::new(&["src/templates/", filename].connect("")))
+        .ok()
+        .unwrap();
 
+    handlebars
+        .register_template_file("base", &Path::new("src/templates/base.hbs"))
+        .ok()
+        .unwrap();
+    handlebars
+}
+pub fn users(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "users.hbs";
+    let mut handlebars = template_html(filename);
+    let data = &json!({
+        "users_ob": User::all(),
+        "users": true,
+        "parent": "base",
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
+}
+
+pub fn about(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "about.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "about": true,
+    });
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
+}
+
+pub fn index(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "index.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "index": true,
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
+}
+
+pub fn activity(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "activity.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "activity": true,
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
 }

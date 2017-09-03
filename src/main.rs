@@ -7,12 +7,19 @@ extern crate params;
 extern crate mount;
 extern crate rustc_serialize;
 extern crate rand;
+extern crate handlebars;
+#[macro_use] extern crate serde_json;
+#[macro_use] extern crate maplit;
+extern crate dotenv;
 
 use std::path::Path;
 use std::error::Error;
+use std::env;
+
 use iron::prelude::*;
 use router::Router;
 use hbs::{HandlebarsEngine, DirectorySource};
+use handlebars::Handlebars;
 use staticfile::Static;
 use mount::Mount;
 
@@ -26,6 +33,8 @@ mod routing;
 mod user;
 
 fn main() {
+    // .envの環境変数読み込み
+    dotenv::dotenv().ok();
 
     //Create Router
     // 末尾のやつ同じだと駄目
@@ -37,15 +46,14 @@ fn main() {
     router.get("/about", routing::about, "about");
     //router.get("/blog", routing::blog, "blog");
     router.get("/random", routing::random, "random");
-    //router.get("/users_json", routing::users_json, "users_json");
-    router.get("/invite_token.json", routing::invite_token, "invite_token");
     router.get("/activity", routing::activity, "activity");
-    router.get("/login", login::login, "login");
-    router.post("/login", login::login, "login");
+    router.get("/login", login::login_get, "login");
+    router.post("/login", login::login_post, "login");
     router.get("/logout", login::logout, "logout");
-    router.get("/register", routing::register, "register");
-    router.post("/register", routing::register, "register");
+    router.get("/register", routing::register_get, "register");
+    router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
+    router.get("/username.json", login::current_user_json, "username");
 
     // Mount
     let mut mount = Mount::new();
@@ -66,14 +74,13 @@ fn main() {
         DirectorySource::new("./src/templates/", ".hbs")
     ));
 
+
     if let Err(r) = hbse.reload() {
         panic!("{}", r.description());
     }
 
     chain.link_after(hbse);
 
-
-    //sqlite_test::test_main();
     println!("[+] Listen on localhost:3000");
     Iron::new(chain).http("localhost:3000").unwrap();
 }

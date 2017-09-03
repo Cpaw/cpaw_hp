@@ -2,6 +2,7 @@ extern crate crypto;
 extern crate rusqlite;
 extern crate serde;
 
+use std::env;
 use std::vec::Vec;
 
 use self::crypto::sha2::Sha512;
@@ -12,7 +13,11 @@ use self::rusqlite::types::ToSql;
 
 use self::serde::ser::{Serialize, Serializer, SerializeStruct};
 
-static DB_PATH: &'static str = "db.sql";
+
+pub fn get_connection() -> Connection {
+    let db_path = env::var("DATABASE_URL").expect("Please set 'DATABASE_URL' environment variable");
+    Connection::open(db_path).unwrap()
+}
 
 #[derive(Debug)]
 pub struct User {
@@ -27,16 +32,16 @@ pub struct User {
 
 impl User {
     pub fn save(&self) -> bool {
-        let conn = Connection::open(DB_PATH).unwrap();
-        conn.execute("INSERT INTO user (email, username, password, permission, bio, graphic)
+        let conn = get_connection();
+        conn.execute("INSERT INTO users (email, username, password, permission, bio, graphic)
                   VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
                   &[&self.email, &self.username, &self.password, &self.permission, &self.bio, &self.graphic]).unwrap();
         true // TODO
     }
 
     pub fn all() -> Vec<User> {
-        let conn = Connection::open(DB_PATH).unwrap();
-        let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic FROM user").unwrap();
+        let conn = get_connection();
+        let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic FROM users").unwrap();
         let user_iter = stmt.query_map(&[], |row| {
             User {
                 id: row.get(0),
@@ -58,10 +63,10 @@ impl User {
     }
 
     pub fn find_by(key: &str, value: &ToSql) -> Option<User> {
-        let conn = Connection::open(DB_PATH).unwrap();
+        let conn = get_connection();
         // TODO Danger
         let mut stmt = conn.prepare(&format!("SELECT id, email, username, password, permission,
-                                             bio, graphic FROM user WHERE {} = ?", key)[..]).unwrap();
+                                             bio, graphic FROM users WHERE {} = ?", key)[..]).unwrap();
         let result_users = stmt.query_map(&[value], |row| {
             User {
                 id: row.get(0),
@@ -98,14 +103,22 @@ impl User {
     }
 
     pub fn delete(id: i32) -> bool {
-        let conn = Connection::open(DB_PATH).unwrap();
-        conn.execute("DELETE FROM user WHERE id = ?1", &[&id]).is_ok()
+        let conn = get_connection();
+        conn.execute("DELETE FROM users WHERE id = ?1", &[&id]).is_ok()
     }
 
     pub fn new(email: String, username: String, password: String,
-               bio: String, graphic: String) -> Option<User> {
+               bio: String, graphic: String) -> Result<User, String> {
         let mut sha = Sha512::new();
         sha.input_str(&password);
+
+        if User::find_by(&"email", &email).is_some() {
+            return Err("This email already registered".to_string());
+        }
+
+        if User::find_by(&"username", &username).is_some() {
+            return Err("This username already registered".to_string());
+        }
 
         let u = User {
             id: -1, // ダミー
@@ -117,7 +130,11 @@ impl User {
             graphic: graphic,
         };
         u.save();
-        User::find_by("email", &u.email)
+
+        return match User::find_by("email", &u.email) {
+            Some(user) => { Ok(user) },
+            None => { Err("Failed to register new user".to_string()) }
+        };
     }
 }
 
