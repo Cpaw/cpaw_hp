@@ -8,6 +8,7 @@ extern crate mount;
 extern crate rustc_serialize;
 extern crate rand;
 extern crate handlebars;
+#[macro_use] extern crate serde_json;
 #[macro_use] extern crate maplit;
 
 use std::path::Path;
