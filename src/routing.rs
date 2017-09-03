@@ -8,7 +8,6 @@ extern crate serde_json;
 
 use std::path::Path;
 use std::collections::HashMap;
-use std::path::Path;
 use iron::prelude::*;
 use iron::{headers, status};
 use router::url_for;
@@ -23,7 +22,6 @@ use user::User;
 use rand::{thread_rng, Rng};
 use std::option::Option;
 use std::env;
-use handlebars::Handlebars;
 
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
@@ -332,7 +330,7 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
 
 pub fn template_html(filename: &str) -> Handlebars {
     let mut handlebars = Handlebars::new();
-
+    
     handlebars
         .register_template_file(filename, &Path::new(&["src/templates/", filename].connect("")))
         .ok()
@@ -344,41 +342,15 @@ pub fn template_html(filename: &str) -> Handlebars {
         .unwrap();
     handlebars
 }
-
-pub fn temp_test(req: &mut Request) -> IronResult<Response> {
-
-    let filename = "test_about";
-    let mut resp = Response::new();
-    
-    let mut handlebars = template_html(filename);
-    let data1 =
-        btreemap! {
-            "parent".to_string() => "base".to_string()
-        };
-
-    let ret_html = handlebars.render(filename, &data1).unwrap_or_else(
-        |e| format!("{}", e)
-    );
-    handlebars
-}
-
-// 助けてくれ〜〜〜〜〜〜
 pub fn test(req: &mut Request) -> IronResult<Response> {
 
     let filename = "users.hbs";
     let mut handlebars = template_html(filename);
-
-    // ここでうまくいい感じのMapを作る
-    /*
-    let mut inner_map = Map::new();
-    inner_map.insert("users".to_string(), User::all());
-    */
-    let data =
-        btreemap! {
-            "users_flag".to_string() => "true".to_string(),
-            "parent".to_string() => "base".to_string()
-        };
-
+    let data = &json!({
+        "users_ob": User::all(),
+        "users": true,
+        "parent": "base",
+    });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
@@ -395,10 +367,10 @@ pub fn about(req: &mut Request) -> IronResult<Response> {
 
     let filename = "about.hbs";
     let mut handlebars = template_html(filename);
-    let data =
-        btreemap! {
-             "parent".to_string() => "base".to_string()
-        };
+    let data = json!({
+        "parent": "base",
+        "about": true,
+    });
 
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
@@ -416,11 +388,10 @@ pub fn index(req: &mut Request) -> IronResult<Response> {
 
     let filename = "index.hbs";
     let mut handlebars = template_html(filename);
-    let data =
-        btreemap! {
-            "parent".to_string() => "base".to_string()
-        };
-
+    let data = json!({
+        "parent": "base",
+        "index": true,
+    });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
@@ -437,11 +408,10 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
 
     let filename = "activity.hbs";
     let mut handlebars = template_html(filename);
-    let data =
-        btreemap! {
-            "parent".to_string() => "base".to_string()
-        };
-
+    let data = json!({
+        "parent": "base",
+        "activity": true,
+    });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
