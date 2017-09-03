@@ -24,44 +24,6 @@ use std::option::Option;
 use std::env;
 
 
-pub fn users(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called member");
-
-
-    let mut resp = Response::new();
-    /*
-    let mut data = HashMap::new();
-    
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-        let a:String = row.get(0);
-        a
-    }).unwrap();
-
-    let mut v2 = Vec::new();
-    for user in user_iter {
-        v2.push(user.unwrap());
-    }
-    data.insert(String::from("usernames"), v2);
-     */
-    
-    let mut data = HashMap::new();
-    // let mut v = Vec::new();
-    // for user in User::all() {
-    //     let mut h = HashMap::new();
-    //     h.insert(String::from("username"), user.username);
-    //     h.insert(String::from("bio"), user.bio);
-    //     h.insert(String::from("graphic"), user.graphic);
-    //     v.push(h);
-    // }
-
-    data.insert(String::from("users"), User::all());
-    resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
 pub fn blog(req: &mut Request) -> IronResult<Response> {
     
     println!("[+] Called blog");
@@ -342,7 +304,7 @@ pub fn template_html(filename: &str) -> Handlebars {
         .unwrap();
     handlebars
 }
-pub fn test(req: &mut Request) -> IronResult<Response> {
+pub fn users(req: &mut Request) -> IronResult<Response> {
 
     let filename = "users.hbs";
     let mut handlebars = template_html(filename);

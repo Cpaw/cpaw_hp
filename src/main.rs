@@ -50,7 +50,6 @@ fn main() {
     router.get("/register", routing::register_get, "register");
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
-    router.get("/test", routing::test, "test");
     
     // Mount
     let mut mount = Mount::new();
