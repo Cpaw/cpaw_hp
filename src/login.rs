@@ -33,24 +33,32 @@ impl iron_sessionstorage::Value for UserSession {
     }
 }
 
-pub fn is_logged_in(req: &mut Request) -> bool {
-    // Result<UserSession>を取り出してErrならfalse戻して関数終了
+pub fn current_user(req: &mut Request) -> Result<User, String> {
     let opt_user_session = match req.session().get::<UserSession>() {
         Ok(opt_us) => { opt_us },
-        Err(_) => { return false; }
+        Err(_) => { return Err("Session can not get".to_string()); }
     };
 
     let user_id_str =  match opt_user_session {
         Some(us) => { us.id },
-        None => { return false; }
+        None => { return Err("UserSession not found in cookie".to_string()); }
     };
 
     let user_id = match user_id_str.parse::<i32>() {
         Ok(id) => { id },
-        Err(_) => { return false }
+        Err(_) => { return Err("Failed to convert user_id to i32 from String".to_string()); }
     };
 
-    User::find(user_id).is_some()
+    let rslt_user = match User::find(user_id) {
+        Some(user) => { Ok(user) },
+        None => { return Err("User not found".to_string()); }
+    };
+
+    rslt_user
+}
+
+pub fn is_logged_in(req: &mut Request) -> bool {
+    current_user(req).is_ok()
 }
 
 pub fn login_post(req: &mut Request) -> IronResult<Response> {
