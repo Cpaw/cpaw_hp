@@ -103,9 +103,17 @@ impl User {
     }
 
     pub fn new(email: String, username: String, password: String,
-               bio: String, graphic: String) -> Option<User> {
+               bio: String, graphic: String) -> Result<User, String> {
         let mut sha = Sha512::new();
         sha.input_str(&password);
+
+        if User::find_by(&"email", &email).is_some() {
+            return Err("This email already registered".to_string());
+        }
+
+        if User::find_by(&"username", &username).is_some() {
+            return Err("This username already registered".to_string());
+        }
 
         let u = User {
             id: -1, // ダミー
@@ -117,7 +125,11 @@ impl User {
             graphic: graphic,
         };
         u.save();
-        User::find_by("email", &u.email)
+
+        return match User::find_by("email", &u.email) {
+            Some(user) => { Ok(user) },
+            None => { Err("Failed to register new user".to_string()) }
+        };
     }
 }
 
