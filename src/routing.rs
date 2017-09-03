@@ -307,22 +307,24 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         
         println!("[+] Bio {}", bio.unwrap());
 
-
-        let flag = User::find_by(&"email", email.unwrap());
-        if !flag.is_none() {            
-            println!("[!] Already registerd");
-            let mut h = HashMap::new();
-            h.insert("result", "already registered");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-
         // to_string() means &str to std::string::String;
-        User::new(email.unwrap().to_string(),
+        let result = User::new(email.unwrap().to_string(),
                   username.unwrap().to_string(),
                   password.unwrap().to_string(),
                   bio.unwrap().to_string(),
                   username.unwrap().to_string());
+
+        match result {
+            Ok(_) => { println!("[+] User registered"); }
+            Err(err_str) => {
+                println!("{}", err_str);
+
+                let mut h = HashMap::new();
+                h.insert("result", err_str);
+                return Ok(Response::with(
+                            (status::Ok, json::encode(&h).unwrap())));
+            }
+        }
     }
     
     let ref top_url = url_for(req, "index", HashMap::new());
