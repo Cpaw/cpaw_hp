@@ -46,7 +46,6 @@ fn main() {
     router.get("/about", routing::about, "about");
     //router.get("/blog", routing::blog, "blog");
     router.get("/random", routing::random, "random");
-    router.get("/invite_token.json", routing::invite_token, "invite_token");
     router.get("/activity", routing::activity, "activity");
     router.get("/login", login::login_get, "login");
     router.post("/login", login::login_post, "login");

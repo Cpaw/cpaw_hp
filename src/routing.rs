@@ -137,7 +137,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
                                       json::encode(&h).unwrap())));
         }
         
-        if token.unwrap() != env!("CPAW_TOKEN") {
+        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'DATABASE_URL' environment variable") {
             println!("[!] Invalid token");
             let mut h = HashMap::new();
             h.insert("result", "invalid token");
@@ -288,19 +288,6 @@ pub fn timer(req: &mut Request) -> IronResult<Response> {
     let data: HashMap<String, String> = HashMap::new();
     resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
     return Ok(resp);
-}
-
-pub fn invite_token(req: &mut Request) -> IronResult<Response> {
-
-    //TODO 起動時にCPAW_TOKEN環境変数を定義する
-    //コードを公開しない前提ならハードコーディングで良い?
-    let mut h = HashMap::new();
-    let token = env!("CPAW_TOKEN");
-    println!("{}", token);
-    h.insert("token", token);
-    return Ok(Response::with((status::Ok,
-                              json::encode(&h).unwrap())));
-    
 }
 
 pub fn template_html(filename: &str) -> Handlebars {
