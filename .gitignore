@@ -2,3 +2,6 @@
 **/*.rs.bk
 *.sql
 /test/
+
+db/*.db
+!db/dummy/*
