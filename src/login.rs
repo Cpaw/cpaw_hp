@@ -62,6 +62,12 @@ pub fn is_logged_in(req: &mut Request) -> bool {
 
 pub fn login(req: &mut Request) -> IronResult<Response> {
 
+    if is_logged_in(req) {
+        // if try!(req.session().get::<UserSession>()).is_some() {
+        // Already logged in
+        return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));
+    }
+    
     if req.method.to_string() == "GET" {
         let mut resp = Response::new();
         let mut data = HashMap::new();
@@ -72,11 +78,6 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
     
     // セッションにUserSessionがあるなら
     // println!("{}", req.session().get::<UserSession>().unwrap().unwrap().id);
-    if is_logged_in(req) {
-    // if try!(req.session().get::<UserSession>()).is_some() {
-        // Already logged in
-        return Ok(Response::with((status::Found, Redirect(url_for!(req, "top")))));
-    }
     
     let map = req.get_ref::<Params>().unwrap().clone();
 
@@ -125,5 +126,5 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
 
 pub fn logout(req: &mut Request) -> IronResult<Response> {
     try!(req.session().clear());
-    Ok(Response::with((status::Ok, Redirect(url_for!(req, "top")))))
+    Ok(Response::with((status::Found, Redirect(url_for!(req, "top")))))
 }

@@ -42,6 +42,7 @@ fn main() {
     router.get("/activity", routing::activity, "activity");
     router.get("/login", login::login, "login");
     router.post("/login", login::login, "login");
+    router.get("/logout", login::logout, "logout");
     router.get("/register", routing::register, "register");
     router.post("/register", routing::register, "register");
     router.get("/timer", routing::timer, "timer");
