@@ -1,37 +1,4 @@
-<!DOCTYPE html>
-	<head>
-	        <meta charset="UTF-8">
-		<link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-		<link href='https://fonts.googleapis.com/css?family=Libre+Baskerville:700' rel='stylesheet' type='text/css'>
-		<link href='http://fonts.googleapis.com/css?family=Roboto:900,400' rel='stylesheet' type='text/css'>
-		<link rel="stylesheet" href="assets/css/common.css" type="text/css">
-		<link rel="stylesheet" href="assets/css/styles.css" type="text/css">
-		<link rel="stylesheet" href="assets/css/member.css" type="text/css">
-		<link rel="stylesheet" href="assets/css/material.css" type="text/css">
-		<script src="https://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
-		<script src="assets/js/script.js"></script>
-		<script src="assets/js/height.js"></script>
-		<script src="assets/js/minigrid.min.js"></script>
-		<script src="assets/js/member.js"></script>
-		<script src="assets/js/jquery.csv.js"></script>
-		<!-- <script src="assets/js/load.js"></script> -->
-		<title>Cpaw</title>
-	</head>
-	<body>
-		<header>
-			<div id="logo">
-				<img src="assets/img/logo.png" width=100%>
-			</div>
-		</header>
-		<nav id="cssmenu">
-			<ul>
-				<li class="active"><a href="index">TOP</a></li>
-				<li><a href="users">Member</a></li>
-				<li><a href="about">About</a></li>
-				<li><a href="blog">Works</a></li>				
-				<li><a href="activity">Other</a></li>
-			</ul>
-		</nav>
+{{#*inline "page"}}
 		<div id="wrapper">
 			<div id="about_title">
 				<h1>Main Member</h1>
@@ -383,8 +350,6 @@
 			</div>
                         -->
 		</div>
-		<footer>
-			©Cpaw
-		</footer>
-	</body>
-</html>
+{{/inline}}
+{{! remove whitespaces with ~ }}
+{{~> (parent)~}}
