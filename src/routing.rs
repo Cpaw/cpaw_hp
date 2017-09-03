@@ -306,7 +306,17 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         }
         
         println!("[+] Bio {}", bio.unwrap());
-        
+
+
+        let flag = User::find_by(&"email", email.unwrap());
+        if !flag.is_none() {            
+            println!("[!] Already registerd");
+            let mut h = HashMap::new();
+            h.insert("result", "already registered");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+
         // to_string() means &str to std::string::String;
         User::new(email.unwrap().to_string(),
                   username.unwrap().to_string(),
@@ -351,4 +361,3 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
                               json::encode(&h).unwrap())));
     
 }
-
