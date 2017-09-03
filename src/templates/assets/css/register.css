@@ -1,0 +1,27 @@
+input {
+  border:0;
+  padding:10px;
+  font-size:0.8em;
+  font-family:Arial, sans-serif;
+  border:solid 1px #ccc;
+  margin:0 0 15px;
+  width:300px;
+}
+
+label {
+  font-size: 20px;
+}
+
+button.register {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 10px 30px;
+  background-color: #246;
+  color: #fff;
+  border-style: none;
+}
+
+button.button4:hover {
+  background-color: #24d;
+  color: #fff;
+}
