@@ -364,9 +364,5 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
     h.insert("token", token);
     return Ok(Response::with((status::Ok,
                               json::encode(&h).unwrap())));
-<<<<<<< HEAD
 
-=======
-
->>>>>>> master
 }
