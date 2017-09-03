@@ -6,24 +6,23 @@ extern crate params;
 extern crate crypto;
 extern crate serde_json;
 
+use std::env;
+use std::option::Option;
 use std::path::Path;
 use std::collections::HashMap;
 use iron::prelude::*;
 use iron::{headers, status};
-use router::url_for;
 use iron::modifiers::{Redirect, Header};
+use router::url_for;
 use handlebars::Handlebars;
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
 use rustc_serialize::json;
-use sql::Blog;
 use user::User;
 use rand::{thread_rng, Rng};
-use std::option::Option;
-use std::env;
 
-
+/*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
     
     println!("[+] Called blog");
@@ -61,6 +60,7 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
     
     return Ok(resp);
 }
+*/
 /*
 pub fn users_json(req: &mut Request) -> IronResult<Response> {
     
@@ -98,10 +98,22 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
     
+    let filename = "register.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "input": true,
+    });
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
     let mut resp = Response::new();
-    let mut data = HashMap::new();
-    data.insert("", "");
-    resp.set_mut(Template::new("register", data)).set_mut(status::Ok);
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
     return Ok(resp);
 }
 

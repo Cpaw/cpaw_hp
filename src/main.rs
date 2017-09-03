@@ -24,7 +24,6 @@ use self::iron_sessionstorage::traits::*;
 use self::iron_sessionstorage::SessionStorage;
 use self::iron_sessionstorage::backends::SignedCookieBackend;
 
-
 mod login;
 mod sql;
 mod routing;
@@ -77,8 +76,6 @@ fn main() {
 
     chain.link_after(hbse);
 
-
-    //sqlite_test::test_main();
     println!("[+] Listen on localhost:3000");
     Iron::new(chain).http("localhost:3000").unwrap();
 }
