@@ -6,7 +6,7 @@ use iron::prelude::*;
 use iron::status;
 use iron::modifiers::Redirect;
 use std::collections::HashMap;
-
+use hbs::{Template};
 use self::iron_sessionstorage::traits::*;
 use self::iron_sessionstorage::SessionStorage;
 use self::iron_sessionstorage::backends::SignedCookieBackend;
@@ -60,6 +60,8 @@ pub fn logged_in(req: &mut Request) -> bool {
 }
 
 pub fn login(req: &mut Request) -> IronResult<Response> {
+
+    
     // セッションにUserSessionがあるなら
     // println!("{}", req.session().get::<UserSession>().unwrap().unwrap().id);
     if logged_in(req) {
@@ -68,22 +70,14 @@ pub fn login(req: &mut Request) -> IronResult<Response> {
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "top")))));
     }
 
-    // TODO Login用のページ返す
-    Ok(Response::with((
-        status::Ok,
-        "text/html".parse::<iron::mime::Mime>().unwrap(),
-        format!("This is an insecure demo, so which email do you want to log in as?<br/> \n\
-        <form method=post> \n\
-        <input type=text name=email> \n\
-        <input type=password name=password> \n\
-        <input type=submit> \n\
-        </form>")
-    )))
-}
-
-pub fn login_post(req: &mut Request) -> IronResult<Response> {
-    println!("[+] Call login_post");
-
+    if req.method.to_string() == "GET" {
+        let mut resp = Response::new();
+        let mut data = HashMap::new();
+        data.insert("", "");
+        resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
+        return Ok(resp);
+    }
+    
     // チェックとかしてない
     let map = req.get_ref::<Params>().unwrap().clone();
 
@@ -97,7 +91,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     //     println!("{:?}", formdata);
     //     iexpect!(formdata.get("email"))[0].to_owned()
     // };
-    println!("[ ] email {}", email);
+    println!("[+] Email {}", email);
 
     let password = match map.find(&["password"]) {
         Some(&Value::String(ref value))  => { value },
