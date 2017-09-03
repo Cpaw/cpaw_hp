@@ -53,6 +53,7 @@ fn main() {
     router.get("/register", routing::register_get, "register");
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
+    router.get("/username.json", login::current_user_json, "username");
     
     // Mount
     let mut mount = Mount::new();

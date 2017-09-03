@@ -2,10 +2,11 @@ extern crate iron;
 extern crate iron_sessionstorage;
 extern crate params;
 extern crate crypto;
+extern crate serde_json;
 
 use iron::prelude::*;
-use iron::status;
-use iron::modifiers::Redirect;
+use iron::{status,headers};
+use iron::modifiers::{Redirect,Header};
 use std::collections::HashMap;
 use hbs::{Template};
 use self::iron_sessionstorage::traits::*;
@@ -13,8 +14,10 @@ use params::{Params, Value};
 use router::url_for;
 use self::crypto::sha2::Sha512;
 use self::crypto::digest::Digest;
-
+use handlebars::Handlebars;
 use user::User;
+use routing::template_html;
+use rustc_serialize::json;
 
 // セッションに保存される情報
 struct UserSession {
@@ -31,6 +34,19 @@ impl iron_sessionstorage::Value for UserSession {
             Some(UserSession { id: value })
         }
     }
+}
+
+pub fn current_user_json(req: &mut Request) -> IronResult<Response> {
+    
+    let mut h = HashMap::new();
+    if is_logged_in(req) {
+        println!("[+] Called current_user_json");
+        let crrnt_user = current_user(req).unwrap();
+        h.insert("session", crrnt_user.username);
+    } else {
+        h.insert("session", "guest".to_string());
+    }
+    return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));    
 }
 
 pub fn current_user(req: &mut Request) -> Result<User, String> {
@@ -60,7 +76,7 @@ pub fn is_logged_in(req: &mut Request) -> bool {
     current_user(req).is_ok()
 }
 
-pub fn login_get(req: &mut Request) -> IronResult<Response> {
+pub fn login_get(req: &mut Request) -> IronResult<Response> {    
 
     if is_logged_in(req) {
         // if try!(req.session().get::<UserSession>()).is_some() {
@@ -68,15 +84,27 @@ pub fn login_get(req: &mut Request) -> IronResult<Response> {
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));
     }
     
+    let filename = "login.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "about": true,
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
     let mut resp = Response::new();
-    let mut data = HashMap::new();
-    data.insert("", "");
-    resp.set_mut(Template::new("login", data)).set_mut(status::Ok);
-    return Ok(resp);
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    Ok(resp)
+        
 }
 
 pub fn login_post(req: &mut Request) -> IronResult<Response> {
-
+    
     if is_logged_in(req) {
         // if try!(req.session().get::<UserSession>()).is_some() {
         // Already logged in

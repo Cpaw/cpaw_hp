@@ -12,7 +12,7 @@ use std::path::Path;
 use std::collections::HashMap;
 use iron::prelude::*;
 use iron::{headers, status};
-use iron::modifiers::{Redirect, Header};
+use iron::modifiers::{Redirect,Header};
 use router::url_for;
 use handlebars::Handlebars;
 use hbs::{Template};
@@ -102,7 +102,7 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let mut handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "input": true,
+        "register": true,
     });
 
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
