@@ -20,6 +20,7 @@ use user::User;
 use rand::{thread_rng, Rng};
 use std::option::Option;
 use std::env;
+use self::time::Timespec;
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
