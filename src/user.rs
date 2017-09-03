@@ -31,12 +31,18 @@ pub struct User {
 }
 
 impl User {
-    pub fn save(&self) -> bool {
+    pub fn insert(&self) -> bool {
         let conn = get_connection();
-        conn.execute("INSERT INTO users (email, username, password, permission, bio, graphic)
-                  VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                  &[&self.email, &self.username, &self.password, &self.permission, &self.bio, &self.graphic]).unwrap();
-        true // TODO
+        let result = conn.execute(
+            "INSERT INTO users (email, username, password, permission, bio, graphic)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            &[&self.email, &self.username, &self.password, &self.permission,
+              &self.bio, &self.graphic]);
+
+        match result {
+            Ok(_) => { true },
+            Err(_) => { false }
+        }
     }
 
     pub fn all() -> Vec<User> {
@@ -129,7 +135,10 @@ impl User {
             bio: bio,
             graphic: graphic,
         };
-        u.save();
+
+        if !u.insert() {
+            return Err("Fialed to insert new user".to_string());
+        }
 
         return match User::find_by("email", &u.email) {
             Some(user) => { Ok(user) },
