@@ -25,7 +25,6 @@ pub struct User {
     pub graphic: String,
 }
 
-// TODO Result
 impl User {
     pub fn save(&self) -> bool {
         let conn = Connection::open(DB_PATH).unwrap();
@@ -78,19 +77,19 @@ impl User {
         // なぜかmutが必要
         let mut users = match result_users {
             Ok(users) => { users }
-            Err(e) => { return None; }
+            Err(_) => { return None; }
         };
 
         let user = match users.nth(0) {
             Some(result_first_user) => {
                 match result_first_user {
                     Ok(first_user) => { first_user },
-                    Err(e) => { return None; }
+                    Err(_) => { return None; }
                 }
             }
             None => { return None; }
         };
-        
+
         Some(user)
     }
 
@@ -98,10 +97,9 @@ impl User {
         User::find_by(&"id", &id)
     }
 
-    // TODO return value
-    pub fn delete(id: i32) {
+    pub fn delete(id: i32) -> bool {
         let conn = Connection::open(DB_PATH).unwrap();
-        conn.execute("DELETE FROM user WHERE id = ?1", &[&id]).unwrap();
+        conn.execute("DELETE FROM user WHERE id = ?1", &[&id]).is_ok()
     }
 
     pub fn new(email: String, username: String, password: String,
@@ -110,13 +108,13 @@ impl User {
         sha.input_str(&password);
 
         let u = User {
-            id: -1,  // 適当
+            id: -1, // ダミー
             email: email,
             username: username,
-            password: sha.result_str(), // to hash
+            password: sha.result_str(),
             permission: 0,
             bio: bio,
-            graphic: graphic
+            graphic: graphic,
         };
         u.save();
         User::find_by("email", &u.email)
@@ -125,12 +123,12 @@ impl User {
 
 impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-        {
-            let mut s = serializer.serialize_struct("User", 3)?;
-            s.serialize_field("username", &self.username)?;
-            s.serialize_field("bio", &self.bio)?;
-            s.serialize_field("graphic", &self.graphic)?;
-            s.end()
-        }
+    where S: Serializer
+    {
+        let mut s = serializer.serialize_struct("User", 3)?;
+        s.serialize_field("username", &self.username)?;
+        s.serialize_field("bio", &self.bio)?;
+        s.serialize_field("graphic", &self.graphic)?;
+        s.end()
+    }
 }

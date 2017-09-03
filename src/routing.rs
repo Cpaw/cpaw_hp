@@ -269,6 +269,24 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
                                       json::encode(&h).unwrap())));
         }
 
+        // TODO メールアドレスの検証
+        // 1. @で分割した際に要素が２つかどうか
+        // 2. 分割した各要素がasciiのprintabeかどうか
+        // 3. 分割した各要素に半角スペース等の区切り文字がないか
+        // 4. 名前解決できるかどうか
+        use std::ascii::AsciiExt;
+        let emailSplited: Vec<&str> = email.unwrap().split("@").collect();
+        if emailSplited.len() != 2 ||
+            !emailSplited[0].is_ascii() ||
+            !emailSplited[1].is_ascii()
+        {
+            println!("[!] Email validation error");
+            let mut h = HashMap::new();
+            h.insert("result", "email validation error");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
+
         println!("[+] Email {}", email.unwrap());
 
         let bio = match map.find(&["bio"]) {
@@ -293,6 +311,16 @@ pub fn register(req: &mut Request) -> IronResult<Response> {
         }
 
         println!("[+] Bio {}", bio.unwrap());
+
+
+        let flag = User::find_by(&"email", email.unwrap());
+        if !flag.is_none() {
+            println!("[!] Already registerd");
+            let mut h = HashMap::new();
+            h.insert("result", "already registered");
+            return Ok(Response::with((status::Ok,
+                                      json::encode(&h).unwrap())));
+        }
 
         // to_string() means &str to std::string::String;
         User::new(email.unwrap().to_string(),
@@ -336,5 +364,9 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
     h.insert("token", token);
     return Ok(Response::with((status::Ok,
                               json::encode(&h).unwrap())));
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> master
 }
