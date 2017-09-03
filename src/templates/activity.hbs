@@ -1,44 +1,17 @@
-<!DOCTYPE html>
-	<head>
-		<meta charset="UTF-8">
-		<link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-		<link href='https://fonts.googleapis.com/css?family=Libre+Baskerville:700' rel='stylesheet' type='text/css'>
-		<link rel="stylesheet" href="assets/css/common.css" type="text/css">
-		<link rel="stylesheet" href="assets/css/styles.css" type="text/css">
-		<link rel="stylesheet" href="assets/css/activity.css" type="text/css">
-		<script src="https://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
-		<script src="assets/js/script.js"></script>
-		<script src="assets/js/height.js"></script>
-		<title>Cpaw</title>
-	</head>
-	<body>
-		<header>
-			<div id="logo">
-				<img src="assets/img/logo.png" width=100%>
-			</div>
-		</header>
-		<nav id="cssmenu">
-			<ul>
-				<li class="active"><a href="index">TOP</a></li>
-				<li><a href="users">Member</a></li>
-				<li><a href="about">About</a></li>
-				<li><a href="blog">Works</a></li>				
-				<li><a href="activity">Other</a></li>
-			</ul>
-		</nav>
+{{#*inline "page"}}
 		<div id="wrapper">
 			<h1>Our activity</h1>
 			<div id="active">
-				<h2>活動日程</h2>
+				<h3>活動日程</h2>
 				<p>基本的には隔週日曜です。メンバーそれぞれ大学や仕事などあるため、毎回日程をそれぞれ確認し、その月でメンバーの予定がもっとも合う日を活動日としています。</p>
 
-				<h2>活動詳細</h2>
+				<h3>活動詳細</h3>
 				<p>Aboutに書いてある活動内容のうちハンズオン大会以外を順に回していく形となっています。
 				<br>また、ホームページの作成や勉強会の打ち合わせ等はリモート作業(Skypeがメイン)で行っています。
 				<br>長期休暇などには、開発合宿を行い様々なものを作成し、OSCなどで展示をしようと試みています。
 				</p>
 
-				<h2>参加メンバー募集</h2>
+				<h3>参加メンバー募集</h3>
 				<p>LT大会やCpawCTF勉強会は一般参加者も募っています。
 				<br>基本的にconnpassなどのサービスを利用して募集を募りますが、小規模の公開されていないイベントにも興味のある方は、以下の連絡先まで気軽にどうぞ！</p>
 			</div>
@@ -69,8 +42,6 @@
 			</div>
 		</div>
 		<div class="clear"></div>
-		<footer>
-			©Cpaw
-		</footer>
-	</body>
-</html>
+{{/inline}}
+{{! remove whitespaces with ~ }}
+{{~> (parent)~}}

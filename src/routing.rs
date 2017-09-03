@@ -4,12 +4,15 @@ extern crate router;
 extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate crypto;
+extern crate serde_json;
 
+use std::path::Path;
 use std::collections::HashMap;
 use iron::prelude::*;
-use iron::status;
+use iron::{headers, status};
 use router::url_for;
-use iron::modifiers::{Redirect};
+use iron::modifiers::{Redirect, Header};
+use handlebars::Handlebars;
 use hbs::{Template};
 use params::{Params, Value};
 use self::rusqlite::Connection;
@@ -20,23 +23,6 @@ use rand::{thread_rng, Rng};
 use std::option::Option;
 use std::env;
 
-pub fn index(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called index");
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("index", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn activity(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called activity");
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("activity", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
 
@@ -73,17 +59,6 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
 
     data.insert(String::from("users"), User::all());
     resp.set_mut(Template::new("users", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn about(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called about");
-
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("about", data)).set_mut(status::Ok);
-    
     return Ok(resp);
 }
 
@@ -350,5 +325,110 @@ pub fn invite_token(req: &mut Request) -> IronResult<Response> {
                               json::encode(&h).unwrap())));
     
 }
+pub fn template_html(filename: &str) -> Handlebars {
+    let mut handlebars = Handlebars::new();
 
-pub fn temp_test()
+    handlebars
+        .register_template_file(filename, &Path::new(&["src/templates/", filename].connect("")))
+        .ok()
+        .unwrap();
+
+    handlebars
+        .register_template_file("base", &Path::new("src/templates/base.hbs"))
+        .ok()
+        .unwrap();
+
+    handlebars
+}
+
+// 助けてくれ〜〜〜〜〜〜
+pub fn test(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "users.hbs";
+    let mut handlebars = template_html(filename);
+
+    // ここでうまくいい感じのMapを作る
+    /*
+    let mut inner_map = Map::new();
+    inner_map.insert("users".to_string(), User::all());
+    */
+    let data =
+        btreemap! {
+            "users_flag".to_string() => "true".to_string(),
+            "parent".to_string() => "base".to_string()
+        };
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
+}
+
+pub fn about(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "about.hbs";
+    let mut handlebars = template_html(filename);
+    let data =
+        btreemap! {
+             "parent".to_string() => "base".to_string()
+        };
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
+}
+
+pub fn index(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "index.hbs";
+    let mut handlebars = template_html(filename);
+    let data =
+        btreemap! {
+            "parent".to_string() => "base".to_string()
+        };
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
+}
+
+pub fn activity(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "activity.hbs";
+    let mut handlebars = template_html(filename);
+    let data =
+        btreemap! {
+            "parent".to_string() => "base".to_string()
+        };
+
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
+}

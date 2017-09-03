@@ -7,18 +7,22 @@ extern crate params;
 extern crate mount;
 extern crate rustc_serialize;
 extern crate rand;
+extern crate handlebars;
+#[macro_use] extern crate maplit;
 
 use std::path::Path;
 use std::error::Error;
 use iron::prelude::*;
 use router::Router;
 use hbs::{HandlebarsEngine, DirectorySource};
+use handlebars::Handlebars;
 use staticfile::Static;
 use mount::Mount;
 
 use self::iron_sessionstorage::traits::*;
 use self::iron_sessionstorage::SessionStorage;
 use self::iron_sessionstorage::backends::SignedCookieBackend;
+
 
 mod login;
 mod sql;
@@ -45,6 +49,7 @@ fn main() {
     router.get("/register", routing::register_get, "register");
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
+    router.get("/test", routing::test, "test");
     
     // Mount
     let mut mount = Mount::new();
@@ -64,6 +69,7 @@ fn main() {
     hbse.add(Box::new(
         DirectorySource::new("./src/templates/", ".hbs")
     ));
+    
     
     if let Err(r) = hbse.reload() {
         panic!("{}", r.description());
