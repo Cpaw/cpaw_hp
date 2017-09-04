@@ -111,11 +111,11 @@ impl User {
                bio: String, graphic: String) -> Result<User, String> {
         let mut sha = Sha512::new();
         sha.input_str(&password);
-
+        
         if User::find_by(&"email", &email).is_some() {
             return Err("This email already registered".to_string());
         }
-
+        
         if User::find_by(&"username", &username).is_some() {
             return Err("This username already registered".to_string());
         }
