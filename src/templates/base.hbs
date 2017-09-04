@@ -9,33 +9,13 @@
 	<link rel="stylesheet" href="/assets/css/common.css" type="text/css">
 	<link rel="stylesheet" href="/assets/css/styles.css" type="text/css">
 
-	{{#if register}}
-	<link rel="stylesheet" href="/assets/css/about.css" type="text/css">
-	<link rel="stylesheet" href="/assets/css/register.css" type="text/css">
-	<script src="/assets/js/register.js"></script>
-	{{/if}}
+	{{#each css}}
+	<link rel="stylesheet" href="/assets/css/{{this}}" type="text/css">
+	{{/each}}
 
-	{{#if index}}
-	<link rel="stylesheet" href="/assets/css/index.css" type="text/css">
-	{{/if}}
-
-	{{#if about}}
-	<link rel="stylesheet" href="/assets/css/about.css" type="text/css">
-	{{/if}}
-
-	{{#if activity}}
-	<link rel="stylesheet" href="/assets/css/activity.css" type="text/css">
-	{{/if}}
-
-	<link rel="stylesheet" href="/assets/css/register.css" type="text/css">
-
-	{{#if users}}
-	<link rel="stylesheet" href="/assets/css/member.css" type="text/css">
-	<link rel="stylesheet" href="/assets/css/material.css" type="text/css">
-	<script src="/assets/js/member.js"></script>
-	<script src="/assets/js/jquery.csv.js"></script>
-	<script src="/assets/js/minigrid.min.js"></script>
-	{{/if}}
+	{{#each js}}
+	<script src="/assets/js/{{this}}"></script>
+	{{/each}}
 
 	<script src="/assets/js/script.js"></script>
 	<script src="/assets/js/height.js"></script>

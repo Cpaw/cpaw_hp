@@ -102,7 +102,8 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let mut handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "register": true,
+        "css": ["about.css", "register.css"],
+        "js": ["register.js"],
     });
 
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
@@ -308,10 +309,11 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
 
     let filename = "users.hbs";
     let mut handlebars = template_html(filename);
-    let data = &json!({
-        "users_ob": User::all(),
-        "users": true,
+    let data = json!({
         "parent": "base",
+        "css": ["material.css", "member.css"],
+        "js": ["member.js", "jquery.csv.js", "minigrid.min.js"],
+        "users_ob": User::all(),
     });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
@@ -331,7 +333,7 @@ pub fn about(req: &mut Request) -> IronResult<Response> {
     let mut handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "about": true,
+        "css": ["about.css"],
     });
 
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
@@ -353,6 +355,7 @@ pub fn index(req: &mut Request) -> IronResult<Response> {
     let data = json!({
         "parent": "base",
         "index": true,
+        "css": ["index.css"],
     });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
@@ -372,7 +375,7 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
     let mut handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "activity": true,
+        "css": ["activity.css"],
     });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
