@@ -31,6 +31,12 @@ pub struct User {
 }
 
 impl User {
+    pub fn set_password(&mut self, password: &String) {
+        let mut sha = Sha512::new();
+        sha.input_str(password);
+        self.password = sha.result_str();
+    }
+
     pub fn insert(&self) -> bool {
         let conn = get_connection();
         let result = conn.execute(
@@ -131,26 +137,24 @@ impl User {
 
     pub fn new(email: String, username: String, password: String,
                bio: String, graphic: String) -> Result<User, String> {
-        let mut sha = Sha512::new();
-        sha.input_str(&password);
-        
         if User::find_by(&"email", &email).is_some() {
             return Err("This email already registered".to_string());
         }
-        
+
         if User::find_by(&"username", &username).is_some() {
             return Err("This username already registered".to_string());
         }
 
-        let u = User {
+        let mut u = User {
             id: -1, // ダミー
             email: email,
             username: username,
-            password: sha.result_str(),
+            password: "".to_string(),
             permission: 0,
             bio: bio,
             graphic: graphic,
         };
+        u.set_password(&password);
 
         if !u.insert() {
             return Err("Fialed to insert new user".to_string());
