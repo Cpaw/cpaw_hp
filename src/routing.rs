@@ -5,6 +5,7 @@ extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate crypto;
 extern crate serde_json;
+extern crate time;
 
 use std::env;
 use std::option::Option;
@@ -21,17 +22,17 @@ use self::rusqlite::Connection;
 use rustc_serialize::json;
 use user::User;
 use rand::{thread_rng, Rng};
+use self::time::Timespec;
+use blog::Blog;
 
-/*
+
 pub fn blog(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called blog");
 
     let mut resp = Response::new();
     let mut data = HashMap::new();
 
     let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT id, title, author, body, time_posted, time_updated FROM blog").unwrap();
+    let mut stmt = conn.prepare("SELECT id, title, author, body FROM blog").unwrap();
     let user_iter = stmt.query_map(&[], |row| {
          Blog {
              id: row.get(0),
@@ -53,8 +54,8 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
         hash.insert(String::from("title"), userUnwrapped.title);
         hash.insert(String::from("body"), userUnwrapped.body);
         hash.insert(String::from("author"), userUnwrapped.author);
-        hash.insert(Timespec::from("time_posted"), userUnwrapped.time_posted);
-        hash.insert(Timespec::from("time_updated"), userUnwrapped.time_updated);
+        // hash.insert(Timespec::from("time_posted"), userUnwrapped.time_posted);
+        // hash.insert(Timespec::from("time_updated"), userUnwrapped.time_updated);
         v.push(hash);
 
     }
@@ -64,7 +65,41 @@ pub fn blog(req: &mut Request) -> IronResult<Response> {
 
     return Ok(resp);
 }
-*/
+
+pub fn blog_new(req: &mut Request) -> IronResult<Response> {
+
+    println!("[+] Called new_blog");
+
+    let mut resp = Response::new();
+
+    let filename = "new_blog.hbs";
+    let mut handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "new_blog": true,
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
+}
+
+// pub fn contribute(req: $mut Request) -> IronResult<Response> {
+//
+//     println!("[+] Called blog Contributer");
+//
+//
+//
+//
+// }
+
+
 /*
 pub fn users_json(req: &mut Request) -> IronResult<Response> {
 

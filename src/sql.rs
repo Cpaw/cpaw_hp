@@ -28,16 +28,6 @@ pub struct User {
     pub permission: u8
 }
 
-#[derive(Debug)]
-pub struct Blog {
-    pub id: u32,
-    pub title: String,
-    pub body: String,
-    pub author: String,
-    pub time_posted: Timespec,
-    pub time_updated: Timespec
-}
-
 #[derive(RustcEncodable)]
 pub struct UserNames {
     pub usernames: Vec<String>

@@ -31,6 +31,7 @@ mod login;
 mod sql;
 mod routing;
 mod user;
+mod blog;
 
 fn main() {
     // .envの環境変数読み込み
@@ -44,12 +45,14 @@ fn main() {
     router.get("/index", routing::index, "index");
     router.get("/users", routing::users, "users");
     router.get("/about", routing::about, "about");
-    //router.get("/blog", routing::blog, "blog");
+    router.get("/blog", routing::blog, "blog");
+    router.get("/new_blog", routing::blog_new, "new_blog");
     router.get("/random", routing::random, "random");
     router.get("/activity", routing::activity, "activity");
     router.get("/login", login::login_get, "login");
     router.post("/login", login::login_post, "login");
     router.get("/logout", login::logout, "logout");
+    // router.post("/contribute", routing::contribute, "contribute");
     router.get("/register", routing::register_get, "register");
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
