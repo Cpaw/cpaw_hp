@@ -12,7 +12,19 @@ label {
   font-size: 20px;
 }
 
-button.register {
+p#errorMsg {
+  color: red;
+}
+
+button#register {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 10px 30px;
+  background-color: #246;
+  color: #fff;
+  border-style: none;
+}
+button#login {
   font-size: 1.2em;
   font-weight: bold;
   padding: 10px 30px;

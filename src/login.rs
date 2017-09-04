@@ -118,7 +118,11 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
 
     let email:&String = match map.find(&["email"]) {
         Some(&Value::String(ref value))  => { value },
-        _ => { return Ok(Response::with((status::Ok, "Login: Please email"))); }
+        _ => {
+            let mut h = HashMap::new();            
+            h.insert("result", false);
+            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+        }
     };
     
     // let email = {
@@ -131,7 +135,11 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     
     let password:&String = match map.find(&["password"]) {
         Some(&Value::String(ref value))  => { value },
-        _ => { return Ok(Response::with((status::Ok, "Login: Please password"))); }
+        _ => {
+            let mut h = HashMap::new();
+            h.insert("result", false);
+            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+        }
     };
     println!("[+] Password {}", password);
 
@@ -142,13 +150,19 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     // 見つからないとOption None
     let user: User = match User::find_by("email", email) {
         Some(user) => { user },
-        None => { return Ok(Response::with((status::Ok, "Login: User not found"))); }
+        None => {
+            let mut h = HashMap::new();
+            h.insert("result", false);
+            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+        }
     };
 
     if user.password != password_hash {
         println!("Invalid password");
         // passwordが一致しなかったら適当にリダイレクト
-        return Ok(Response::with((status::Ok, "Login: invalid password")));
+        let mut h = HashMap::new();
+        h.insert("result", false);
+        return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));        
     }
 
     println!("[ ] Save session");
@@ -156,7 +170,9 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     try!( req.session().set(UserSession { id: user.id.to_string() }) );
 
     // '/'にリダイレクト
-    Ok(Response::with((status::Found, "Login: Success")))
+    let mut h = HashMap::new();
+    h.insert("result", true);
+    return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));        
 }
 
 pub fn logout(req: &mut Request) -> IronResult<Response> {

@@ -271,7 +271,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
                 let mut h = HashMap::new();
                 h.insert("result", err_str);
                 return Ok(Response::with(
-                            (status::Ok, json::encode(&h).unwrap())));
+                    (status::Ok, json::encode(&h).unwrap())));
             }
         }
     }

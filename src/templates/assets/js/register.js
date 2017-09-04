@@ -1,7 +1,7 @@
 $(function(){
 
     // パスワード確認
-    $('button').on('click', function(e){
+    $('button#register').on('click', function(e){
 
         // パスワードが一致していません文章が無限に増えないようにする
         if($('p#errorMsg')[0]) {
