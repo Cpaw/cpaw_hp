@@ -116,7 +116,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     
     let map = req.get_ref::<Params>().unwrap().clone();
 
-    let email:&String = match map.find(&["email"]) {
+    let username:&String = match map.find(&["username"]) {
         Some(&Value::String(ref value))  => { value },
         _ => {
             let mut h = HashMap::new();            
@@ -131,7 +131,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     //     println!("{:?}", formdata);
     //     iexpect!(formdata.get("email"))[0].to_owned()
     // };
-    println!("[+] Email {}", email);
+    println!("[+] Username {}", username);
     
     let password:&String = match map.find(&["password"]) {
         Some(&Value::String(ref value))  => { value },
@@ -148,7 +148,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     let password_hash = sha.result_str();
 
     // 見つからないとOption None
-    let user: User = match User::find_by("email", email) {
+    let user: User = match User::find_by("username", username) {
         Some(user) => { user },
         None => {
             let mut h = HashMap::new();

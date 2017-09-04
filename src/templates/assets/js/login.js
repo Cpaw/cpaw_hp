@@ -7,7 +7,7 @@ $(function() {
             type: 'POST',
             url: 'http://localhost:3000/login',
             data: {
-                "email": $('input#email').val(),
+                "username": $('input#username').val(),
                 "password": $('input#password').val()
             },
             dataType: 'json',
@@ -24,7 +24,7 @@ $(function() {
                         $('<p></p>').attr('id', "errorMsg").text("メールアドレスまたはパスワードが間違っています")
                     );
                     
-                    $('input#email').val("");
+                    $('input#username').val("");
                     $('input#password').val("");
                 }
             }
