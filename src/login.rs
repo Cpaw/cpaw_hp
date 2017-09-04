@@ -88,7 +88,7 @@ pub fn login_get(req: &mut Request) -> IronResult<Response> {
     let mut handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "about": true,
+        "css": ["about.css"],
     });
     let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
