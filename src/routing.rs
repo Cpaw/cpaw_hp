@@ -137,14 +137,13 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
                                       json::encode(&h).unwrap())));
         }
         
-        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'DATABASE_URL' environment variable") {
+        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
             println!("[!] Invalid token");
             let mut h = HashMap::new();
-            h.insert("result", "invalid token");
+            h.insert("result", "Invalid invite token");
             return Ok(Response::with((status::Ok,
                                       json::encode(&h).unwrap())));
         }
-        
         
         let username = match map.find(&["username"]){
             Some(&Value::String(ref name))  => Some(name),
@@ -275,9 +274,10 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             }
         }
     }
-    
-    let ref top_url = url_for(req, "index", HashMap::new());
-    return Ok(Response::with((status::Found, Redirect(top_url.clone()))));
+    let mut h = HashMap::new();
+    h.insert("result", true);
+    return Ok(Response::with(
+        (status::Ok, json::encode(&h).unwrap())));
 }
 
 pub fn timer(req: &mut Request) -> IronResult<Response> {
