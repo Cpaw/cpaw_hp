@@ -28,7 +28,6 @@ use self::iron_sessionstorage::SessionStorage;
 use self::iron_sessionstorage::backends::SignedCookieBackend;
 
 mod login;
-mod sql;
 mod routing;
 mod user;
 
