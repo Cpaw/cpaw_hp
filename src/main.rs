@@ -27,8 +27,8 @@ use self::iron_sessionstorage::traits::*;
 use self::iron_sessionstorage::SessionStorage;
 use self::iron_sessionstorage::backends::SignedCookieBackend;
 
+#[macro_use] mod routing;
 mod login;
-mod routing;
 mod user;
 
 fn main() {
