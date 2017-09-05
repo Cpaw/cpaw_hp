@@ -32,6 +32,13 @@ macro_rules! take_param {
     }
 }
 
+pub fn response_json(json: serde_json::Value) -> Response {
+    Response::new()
+        .set(status::Ok)
+        .set(Header(headers::ContentType::json()))
+        .set(json.to_string())
+}
+
 /*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
     
