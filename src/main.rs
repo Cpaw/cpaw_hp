@@ -54,6 +54,8 @@ fn main() {
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
     router.get("/username.json", login::current_user_json, "username");
+    router.get("/user/:username", routing::user_update_get, "user_update_get");
+    router.patch("/user/:username", routing::user_update_patch, "user_update_patch");
     
     // Mount
     let mut mount = Mount::new();

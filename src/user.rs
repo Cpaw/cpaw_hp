@@ -31,12 +31,40 @@ pub struct User {
 }
 
 impl User {
-    pub fn save(&self) -> bool {
+    pub fn set_password(&mut self, password: &String) {
+        let mut sha = Sha512::new();
+        sha.input_str(password);
+        self.password = sha.result_str();
+    }
+
+    pub fn insert(&self) -> bool {
         let conn = get_connection();
-        conn.execute("INSERT INTO users (email, username, password, permission, bio, graphic)
-                  VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                  &[&self.email, &self.username, &self.password, &self.permission, &self.bio, &self.graphic]).unwrap();
-        true // TODO
+        let result = conn.execute(
+            "INSERT INTO users (email, username, password, permission, bio, graphic)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            &[&self.email, &self.username, &self.password, &self.permission,
+              &self.bio, &self.graphic]);
+
+        match result {
+            Ok(_) => { true },
+            Err(_) => { false }
+        }
+    }
+
+    // 変更を反映する
+    pub fn update(&self) -> bool {
+        let conn = get_connection();
+        let result = conn.execute(
+            "UPDATE users SET email=?2, username=?3, password=?4, permission=?5,
+                              bio=?6, graphic=?7
+             WHERE id=?1",
+            &[&self.id, &self.email, &self.username, &self.password,
+                &self.permission, &self.bio, &self.graphic]);
+
+        match result {
+            Ok(_) => true,
+            Err(_) => false
+        }
     }
 
     pub fn all() -> Vec<User> {
@@ -109,27 +137,28 @@ impl User {
 
     pub fn new(email: String, username: String, password: String,
                bio: String, graphic: String) -> Result<User, String> {
-        let mut sha = Sha512::new();
-        sha.input_str(&password);
-        
         if User::find_by(&"email", &email).is_some() {
             return Err("This email already registered".to_string());
         }
-        
+
         if User::find_by(&"username", &username).is_some() {
             return Err("This username already registered".to_string());
         }
 
-        let u = User {
+        let mut u = User {
             id: -1, // ダミー
             email: email,
             username: username,
-            password: sha.result_str(),
+            password: "".to_string(),
             permission: 0,
             bio: bio,
             graphic: graphic,
         };
-        u.save();
+        u.set_password(&password);
+
+        if !u.insert() {
+            return Err("Fialed to insert new user".to_string());
+        }
 
         return match User::find_by("email", &u.email) {
             Some(user) => { Ok(user) },
@@ -142,7 +171,8 @@ impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: Serializer
     {
-        let mut s = serializer.serialize_struct("User", 3)?;
+        let mut s = serializer.serialize_struct("User", 4)?;
+        s.serialize_field("email", &self.email)?;
         s.serialize_field("username", &self.username)?;
         s.serialize_field("bio", &self.bio)?;
         s.serialize_field("graphic", &self.graphic)?;
