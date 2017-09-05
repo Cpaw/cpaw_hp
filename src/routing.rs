@@ -33,6 +33,21 @@ macro_rules! take_param {
     }
 }
 
+pub fn template_html(filename: &str) -> Handlebars {
+    let mut handlebars = Handlebars::new();
+
+    handlebars
+        .register_template_file(filename, &Path::new(&["src/templates/", filename].join("")))
+        .ok()
+        .unwrap();
+
+    handlebars
+        .register_template_file("base", &Path::new("src/templates/base.hbs"))
+        .ok()
+        .unwrap();
+    handlebars
+}
+
 pub fn response_html(html: String) -> Response {
     Response::new()
         .set(status::Ok)
@@ -46,6 +61,43 @@ pub fn response_json(json: serde_json::Value) -> Response {
         .set(Header(headers::ContentType::json()))
         .set(json.to_string())
 }
+
+// URLを基に更新対象のUserを返す
+pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
+    let target_username:String = req.extensions
+        .get::<Router>().unwrap()
+        .find("username").unwrap_or("/")
+        .to_string();
+
+    println!("[ ] /user/{}", target_username);
+
+    // Login確認
+    let current_user:User = match login::current_user(req) {
+        Ok(u) => u,
+        Err(_) => {
+            println!("[ ] Please login");
+            return Err(Response::with((status::Found, Redirect(url_for!(req, "login")))));
+        }
+    };
+
+    // 存在確認
+    let target_user = match User::find_by("username", &target_username) {
+        Some(user) => user,
+        None => {
+            println!("[ ] User \"{}\" not found", target_username);
+            return Err(Response::with((status::Found, Redirect(url_for!(req, "register")))));
+        }
+    };
+
+    // 自身 or 権限持ち
+    if current_user.username != target_user.username && current_user.permission != 1 {
+        println!("[ ] Different user or not permission");
+        return Err(Response::with((status::Found, Redirect(url_for!(req, "top")))));
+    }
+
+    Ok(target_user)
+}
+
 
 /*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
@@ -118,6 +170,15 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
     rng.shuffle(&mut users);
     data.insert(String::from("users"), users);
     resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
+    return Ok(resp);
+}
+
+pub fn timer(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called timer");
+
+    let mut resp = Response::new();
+    let data: HashMap<String, String> = HashMap::new();
+    resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
     return Ok(resp);
 }
 
@@ -300,30 +361,6 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
         (status::Ok, json::encode(&h).unwrap())));
 }
 
-pub fn timer(req: &mut Request) -> IronResult<Response> {
-    println!("[+] Called timer");
-
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn template_html(filename: &str) -> Handlebars {
-    let mut handlebars = Handlebars::new();
-    
-    handlebars
-        .register_template_file(filename, &Path::new(&["src/templates/", filename].join("")))
-        .ok()
-        .unwrap();
-
-    handlebars
-        .register_template_file("base", &Path::new("src/templates/base.hbs"))
-        .ok()
-        .unwrap();
-    handlebars
-}
-
 pub fn users(req: &mut Request) -> IronResult<Response> {
     let filename = "users.hbs";
     let handlebars = template_html(filename);
@@ -385,42 +422,6 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
     );
 
     Ok(response_html(html_str))
-}
-
-// URLを基に更新対象のUserを返す
-pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
-    let target_username:String = req.extensions
-        .get::<Router>().unwrap()
-        .find("username").unwrap_or("/")
-        .to_string();
-
-    println!("[ ] /user/{}", target_username);
-
-    // Login確認
-    let current_user:User = match login::current_user(req) {
-        Ok(u) => u,
-        Err(_) => {
-            println!("[ ] Please login");
-            return Err(Response::with((status::Found, Redirect(url_for!(req, "login")))));
-        }
-    };
-
-    // 存在確認
-    let target_user = match User::find_by("username", &target_username) {
-        Some(user) => user,
-        None => {
-            println!("[ ] User \"{}\" not found", target_username);
-            return Err(Response::with((status::Found, Redirect(url_for!(req, "register")))));
-        }
-    };
-
-    // 自身 or 権限持ち
-    if current_user.username != target_user.username && current_user.permission != 1 {
-        println!("[ ] Different user or not permission");
-        return Err(Response::with((status::Found, Redirect(url_for!(req, "top")))));
-    }
-
-    Ok(target_user)
 }
 
 pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
