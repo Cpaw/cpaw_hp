@@ -202,104 +202,103 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
 pub fn register_post(req: &mut Request) -> IronResult<Response> {
     println!("[+] Called register_post");
 
+    let map = req.get_ref::<Params>().unwrap();
+
+    let token = take_param!(map, "invite_token", Value::String);
+
+    if token.is_none() {
+        println!("[!] Invite token is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
+        println!("[!] Invalid token");
+        return Ok(response_json(json!({"result": "Invalid invite token"})))
+    }
+
+    let username = take_param!(map, "username", Value::String);
+
+    if username.is_none() {
+        println!("[!] Username is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if username.unwrap() == "" {
+        println!("[!] Username is empty");
+        return Ok(response_json(json!({"result": "username is empty"})))
+    }
+
+    println!("[+] Username {}", username.unwrap());
+
+    let password = take_param!(map, "password", Value::String);
+
+    if password.is_none() {
+        println!("[!] Password is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if password.unwrap() == "" {
+        println!("[!] Password is empty");
+        return Ok(response_json(json!({"result": "password is empty"})))
+    }
+
+    println!("[+] Password {}", password.unwrap());
+
+    let email = take_param!(map, "email", Value::String);
+
+    if email.is_none() {
+        println!("[!] Email is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if email.unwrap() == "" {
+        println!("[!] Email is empty");
+        return Ok(response_json(json!({"result": "email is empty"})))
+    }
+
+    // TODO メールアドレスの検証
+    // 1. @で分割した際に要素が２つかどうか
+    // 2. 分割した各要素がasciiのprintabeかどうか
+    // 3. 分割した各要素に半角スペース等の区切り文字がないか
+    // 4. 名前解決できるかどうか
+    use std::ascii::AsciiExt;
+    let email_splited: Vec<&str> = email.unwrap().split("@").collect();
+    if email_splited.len() != 2 ||
+        !email_splited[0].is_ascii() ||
+        !email_splited[1].is_ascii()
     {
-        let map = req.get_ref::<Params>().unwrap();
+        println!("[!] Email validation error");
+        return Ok(response_json(json!({"result": "email validation error"})))
+    }
 
-        let token = take_param!(map, "invite_token", Value::String);
+    println!("[+] Email {}", email.unwrap());
 
-        if token.is_none() {
-            println!("[!] Invite token is None");
-            return Ok(response_json(json!({"result": "invalid parameter"})))
-        }
+    let bio = take_param!(map, "bio", Value::String);
 
-        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
-            println!("[!] Invalid token");
-            return Ok(response_json(json!({"result": "Invalid invite token"})))
-        }
+    if bio.is_none() {
+        println!("[!] bio is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
 
-        let username = take_param!(map, "username", Value::String);
+    if bio.unwrap() == "" {
+        println!("[!] Bio is empty");
+        return Ok(response_json(json!({"result": "bio is empty"})))
+    }
 
-        if username.is_none() {
-            println!("[!] Username is None");
-            return Ok(response_json(json!({"result": "invalid parameter"})))
-        }
+    println!("[+] Bio {}", bio.unwrap());
 
-        if username.unwrap() == "" {
-            println!("[!] Username is empty");
-            return Ok(response_json(json!({"result": "username is empty"})))
-        }
+    let result = User::new(
+                    email.unwrap().to_string(),
+                    username.unwrap().to_string(),
+                    password.unwrap().to_string(),
+                    bio.unwrap().to_string(),
+                    username.unwrap().to_string());
 
-        println!("[+] Username {}", username.unwrap());
-
-        let password = take_param!(map, "password", Value::String);
-
-        if password.is_none() {
-            println!("[!] Password is None");
-            return Ok(response_json(json!({"result": "invalid parameter"})))
-        }
-
-        if password.unwrap() == "" {
-            println!("[!] Password is empty");
-            return Ok(response_json(json!({"result": "password is empty"})))
-        }
-
-        println!("[+] Password {}", password.unwrap());
-
-        let email = take_param!(map, "email", Value::String);
-
-        if email.is_none() {
-            println!("[!] Email is None");
-            return Ok(response_json(json!({"result": "invalid parameter"})))
-        }
-
-        if email.unwrap() == "" {
-            println!("[!] Email is empty");
-            return Ok(response_json(json!({"result": "email is empty"})))
-        }
-
-        // TODO メールアドレスの検証
-        // 1. @で分割した際に要素が２つかどうか
-        // 2. 分割した各要素がasciiのprintabeかどうか
-        // 3. 分割した各要素に半角スペース等の区切り文字がないか
-        // 4. 名前解決できるかどうか
-        use std::ascii::AsciiExt;
-        let email_splited: Vec<&str> = email.unwrap().split("@").collect();
-        if email_splited.len() != 2 ||
-            !email_splited[0].is_ascii() ||
-            !email_splited[1].is_ascii()
-        {
-            println!("[!] Email validation error");
-            return Ok(response_json(json!({"result": "email validation error"})))
-        }
-
-        println!("[+] Email {}", email.unwrap());
-
-        let bio = take_param!(map, "bio", Value::String);
-
-        if bio.is_none() {
-            println!("[!] bio is None");
-            return Ok(response_json(json!({"result": "invalid parameter"})))
-        }
-
-        if bio.unwrap() == "" {
-            println!("[!] Bio is empty");
-            return Ok(response_json(json!({"result": "bio is empty"})))
-        }
-
-        println!("[+] Bio {}", bio.unwrap());
-
-        let result = User::new(email.unwrap().to_string(),
-                  username.unwrap().to_string(),
-                  password.unwrap().to_string(),
-                  bio.unwrap().to_string(),
-                  username.unwrap().to_string());
-
-        match result {
-            Ok(_) => { println!("[+] User registered"); }
-            Err(err_str) => {
-                println!("{}", err_str);
-                return Ok(response_json(json!({"result": err_str})))
-            }
+    match result {
+        Ok(_) => { println!("[+] User registered"); }
+        Err(err_str) => {
+            println!("{}", err_str);
+            return Ok(response_json(json!({"result": err_str})))
         }
     }
 
