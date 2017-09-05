@@ -14,6 +14,7 @@ use iron::prelude::*;
 use iron::{headers, status};
 use iron::modifiers::{Redirect,Header};
 use router::url_for;
+use router::Router;
 use handlebars::Handlebars;
 use hbs::{Template};
 use params::{Params, Value};
@@ -21,6 +22,8 @@ use self::rusqlite::Connection;
 use rustc_serialize::json;
 use user::User;
 use rand::{thread_rng, Rng};
+use login;
+
 
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
@@ -404,4 +407,131 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
         .set_mut(Header(headers::ContentType::html()));
     
     return Ok(resp);
+}
+
+// URLを基に更新対象のUserを返す
+pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
+    let target_username:String = req.extensions
+        .get::<Router>().unwrap()
+        .find("username").unwrap_or("/")
+        .to_string();
+
+    println!("[ ] /user/{}", target_username);
+
+    // Login確認
+    let current_user:User = match login::current_user(req) {
+        Ok(u) => u,
+        Err(_) => {
+            println!("[ ] Please login");
+            return Err(Response::with((status::Found, Redirect(url_for!(req, "login")))));
+        }
+    };
+
+    // 存在確認
+    let target_user = match User::find_by("username", &target_username) {
+        Some(user) => user,
+        None => {
+            println!("[ ] User \"{}\" not found", target_username);
+            return Err(Response::with((status::Found, Redirect(url_for!(req, "register")))));
+        }
+    };
+
+    // 自身 or 権限持ち
+    if current_user.username != target_user.username && current_user.permission != 1 {
+        println!("[ ] Different user or not permission");
+        return Err(Response::with((status::Found, Redirect(url_for!(req, "top")))));
+    }
+
+    Ok(target_user)
+}
+
+pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called user_update_get");
+
+    let target_user = match user_update_valid(req) {
+        Ok(user) => user,
+        Err(res) => { return Ok(res); }
+    };
+
+    let filename = "user_update.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["about.css", "user_update.css"],
+        "js": ["user_update.js"],
+        "user": target_user,
+    });
+
+    let html:String = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    let mut resp = Response::new();
+    resp
+        .set_mut(html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+
+    return Ok(resp);
+}
+
+pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called user_update_patch");
+
+    let mut user:User = match user_update_valid(req) {
+        Ok(user) => user,
+        Err(res) => {
+            let json = json!({"result": "Invalid user"});
+            return Ok(response_json(json));
+        }
+    };
+
+    let map = req.get_ref::<Params>().unwrap();
+    let email    = take_param!(map, "email", Value::String);
+    let username = take_param!(map, "username", Value::String);
+    let password = take_param!(map, "password", Value::String);
+    let bio      = take_param!(map, "bio", Value::String);
+
+    println!("[ ] email:    \"{}\"", email.unwrap_or(&"None".to_string()));
+    println!("[ ] username: \"{}\"", username.unwrap_or(&"None".to_string()));
+    println!("[ ] password: \"{}\"", password.unwrap_or(&"None".to_string()));
+    println!("[ ] bio:      \"{}\"", bio.unwrap_or(&"None".to_string()));
+
+    fn already_used(target_user: &User, key: &str, new_value: &String) -> bool{
+        match User::find_by(key, new_value) {
+            Some(u) => u.id != target_user.id,
+            None => false
+        }
+    }
+
+    if email.is_some() && !username.unwrap().is_empty() {
+        if already_used(&user, "email", email.unwrap()) {
+            return Ok(response_json(json!({"result": "This email address already used"})))
+        }
+        user.email = email.unwrap().clone();
+    }
+
+    if username.is_some() && !username.unwrap().is_empty() {
+        if already_used(&user, "username", username.unwrap()) {
+            return Ok(response_json(json!({"result": "This username already used"})))
+        }
+        user.username = username.unwrap().clone();
+    }
+
+    if password.is_some() && !password.unwrap().is_empty() {
+        user.set_password(password.unwrap());
+    }
+
+    if bio.is_some() {
+        user.bio = bio.unwrap().clone();
+    }
+
+    if user.update() {
+        println!("[ ] Update user");
+        Ok(response_json(json!({"result": true, "username": user.username})))
+    }
+    else {
+        println!("[ ] Failed to update user");
+        Ok(response_json(json!({"result": "Update failed"})))
+    }
 }
