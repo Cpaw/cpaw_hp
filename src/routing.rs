@@ -21,6 +21,7 @@ use user::User;
 use rand::{thread_rng, Rng};
 use login;
 
+// Helpers
 
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
@@ -30,6 +31,13 @@ macro_rules! take_param {
             _ => None,
         }
     }
+}
+
+pub fn response_html(html: String) -> Response {
+    Response::new()
+        .set(status::Ok)
+        .set(Header(headers::ContentType::html()))
+        .set(html)
 }
 
 pub fn response_json(json: serde_json::Value) -> Response {
