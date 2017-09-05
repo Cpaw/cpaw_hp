@@ -142,6 +142,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn logout(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called logout");
     try!(req.session().clear());
     Ok(Response::with((status::Found, Redirect(url_for!(req, "top")))))
 }

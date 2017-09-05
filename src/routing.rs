@@ -252,6 +252,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called users");
     let filename = "users.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -269,6 +270,7 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn about(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called about");
     let filename = "about.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -284,6 +286,7 @@ pub fn about(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called index");
     let filename = "index.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -300,6 +303,7 @@ pub fn index(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn activity(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called activity");
     let filename = "activity.hbs";
     let handlebars = template_html(filename);
     let data = json!({
