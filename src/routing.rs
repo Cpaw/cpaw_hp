@@ -205,10 +205,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
     {
         let map = req.get_ref::<Params>().unwrap();
 
-        let token = match map.find(&["invite_token"]) {
-            Some(&Value::String(ref name)) => Some(name),
-            _ => None,
-        };
+        let token = take_param!(map, "invite_token", Value::String);
 
         if token.is_none() {
             println!("[!] Invite token is None");
@@ -220,10 +217,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             return Ok(response_json(json!({"result": "Invalid invite token"})))
         }
 
-        let username = match map.find(&["username"]){
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
+        let username = take_param!(map, "username", Value::String);
 
         if username.is_none() {
             println!("[!] Username is None");
@@ -237,10 +231,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
         println!("[+] Username {}", username.unwrap());
 
-        let password = match map.find(&["password"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
+        let password = take_param!(map, "password", Value::String);
 
         if password.is_none() {
             println!("[!] Password is None");
@@ -254,10 +245,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
         println!("[+] Password {}", password.unwrap());
 
-        let email = match map.find(&["email"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
+        let email = take_param!(map, "email", Value::String);
 
         if email.is_none() {
             println!("[!] Email is None");
@@ -286,10 +274,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
         println!("[+] Email {}", email.unwrap());
 
-        let bio = match map.find(&["bio"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
+        let bio = take_param!(map, "bio", Value::String);
 
         if bio.is_none() {
             println!("[!] bio is None");
