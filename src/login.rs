@@ -8,7 +8,7 @@ use iron::prelude::*;
 use iron::{status,headers};
 use iron::modifiers::{Redirect,Header};
 use std::collections::HashMap;
-use hbs::{Template};
+use hbs::Template;
 use self::iron_sessionstorage::traits::*;
 use params::{Params, Value};
 use router::url_for;
@@ -85,7 +85,7 @@ pub fn login_get(req: &mut Request) -> IronResult<Response> {
     }
     
     let filename = "login.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["about.css"],

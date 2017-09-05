@@ -1,4 +1,3 @@
-extern crate rusqlite;
 extern crate iron;
 extern crate router;
 extern crate handlebars_iron as hbs;
@@ -7,7 +6,6 @@ extern crate crypto;
 extern crate serde_json;
 
 use std::env;
-use std::option::Option;
 use std::path::Path;
 use std::collections::HashMap;
 use iron::prelude::*;
@@ -18,7 +16,6 @@ use router::Router;
 use handlebars::Handlebars;
 use hbs::{Template};
 use params::{Params, Value};
-use self::rusqlite::Connection;
 use rustc_serialize::json;
 use user::User;
 use rand::{thread_rng, Rng};
@@ -119,7 +116,7 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
     
     let filename = "register.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["about.css", "register.css"],
@@ -239,10 +236,10 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
         // 3. 分割した各要素に半角スペース等の区切り文字がないか
         // 4. 名前解決できるかどうか
         use std::ascii::AsciiExt;
-        let emailSplited: Vec<&str> = email.unwrap().split("@").collect();
-        if emailSplited.len() != 2 ||
-            !emailSplited[0].is_ascii() ||
-            !emailSplited[1].is_ascii()
+        let email_splited: Vec<&str> = email.unwrap().split("@").collect();
+        if email_splited.len() != 2 ||
+            !email_splited[0].is_ascii() ||
+            !email_splited[1].is_ascii()
         {
             println!("[!] Email validation error");
             let mut h = HashMap::new();
@@ -315,7 +312,7 @@ pub fn template_html(filename: &str) -> Handlebars {
     let mut handlebars = Handlebars::new();
     
     handlebars
-        .register_template_file(filename, &Path::new(&["src/templates/", filename].connect("")))
+        .register_template_file(filename, &Path::new(&["src/templates/", filename].join("")))
         .ok()
         .unwrap();
 
@@ -325,10 +322,11 @@ pub fn template_html(filename: &str) -> Handlebars {
         .unwrap();
     handlebars
 }
+
 pub fn users(req: &mut Request) -> IronResult<Response> {
 
     let filename = "users.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["material.css", "member.css"],
@@ -350,7 +348,7 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
 pub fn about(req: &mut Request) -> IronResult<Response> {
 
     let filename = "about.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["about.css"],
@@ -371,7 +369,7 @@ pub fn about(req: &mut Request) -> IronResult<Response> {
 pub fn index(req: &mut Request) -> IronResult<Response> {
 
     let filename = "index.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "index": true,
@@ -392,7 +390,7 @@ pub fn index(req: &mut Request) -> IronResult<Response> {
 pub fn activity(req: &mut Request) -> IronResult<Response> {
 
     let filename = "activity.hbs";
-    let mut handlebars = template_html(filename);
+    let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["activity.css"],
@@ -480,7 +478,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
 
     let mut user:User = match user_update_valid(req) {
         Ok(user) => user,
-        Err(res) => {
+        Err(_) => {
             let json = json!({"result": "Invalid user"});
             return Ok(response_json(json));
         }
