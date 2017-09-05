@@ -171,7 +171,8 @@ impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: Serializer
     {
-        let mut s = serializer.serialize_struct("User", 3)?;
+        let mut s = serializer.serialize_struct("User", 4)?;
+        s.serialize_field("email", &self.email)?;
         s.serialize_field("username", &self.username)?;
         s.serialize_field("bio", &self.bio)?;
         s.serialize_field("graphic", &self.graphic)?;
