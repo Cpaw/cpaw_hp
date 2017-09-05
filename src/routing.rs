@@ -21,7 +21,7 @@ use user::User;
 use rand::{thread_rng, Rng};
 use login;
 
-// Helpers
+// --- Helpers ---
 
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
@@ -113,66 +113,8 @@ pub fn email_valid(email: &String) -> bool {
         !email_splited[1].is_ascii()
 }
 
-/*
-pub fn blog(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called blog");
 
-    let mut resp = Response::new();
-    let mut data = HashMap::new();
-    
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT id, title, author, body FROM blog").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-         Blog {
-             id: row.get(0),
-             title: row.get(1),
-             author: row.get(2),
-             body: row.get(3),
-         }
-    }).unwrap();
-    
-    let mut v = Vec::new();
-    for user in user_iter {
-        
-        let mut hash: HashMap<String, String> = HashMap::new();
-        let userUnwrapped = user.unwrap();
-        
-        hash.insert(String::from("id"), userUnwrapped.id.to_string());
-        hash.insert(String::from("title"), userUnwrapped.title);
-        hash.insert(String::from("body"), userUnwrapped.body);
-        hash.insert(String::from("author"), userUnwrapped.author);
-        v.push(hash);
-        
-    }
-    
-    data.insert(String::from("blog"), v);
-    resp.set_mut(Template::new("blog", data)).set_mut(status::Ok);
-    
-    return Ok(resp);
-}
-*/
-/*
-pub fn users_json(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called random");
-    
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-        let a:String = row.get(0);
-        a
-    }).unwrap();
-
-    let mut v2 = Vec::new();
-    for user in user_iter {
-        v2.push(user.unwrap());
-    }
-    let usernames = UserNames { usernames: v2 };
-    let payload = json::encode(&usernames).unwrap();
-    Ok(Response::with((status::Ok, payload)))
-}
-*/
+// --- Routing handlers ---
 
 pub fn random(req: &mut Request) -> IronResult<Response> {
     println!("[+] Called random");
