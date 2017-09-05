@@ -107,20 +107,15 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
 
     let map = req.get_ref::<Params>().unwrap().clone();
 
-    let username:&String = match map.find(&["username"]) {
-        Some(&Value::String(ref value))  => { value },
-        _ => {
-            return Ok(response_json(json!({"result": false})))
-        }
+    let username = match take_param!(map, "username", Value::String) {
+        Some(user) => user,
+        None => { return Ok(response_json(json!({"result": false}))) }
     };
-
     println!("[+] Username {}", username);
 
-    let password:&String = match map.find(&["password"]) {
-        Some(&Value::String(ref value))  => { value },
-        _ => {
-            return Ok(response_json(json!({"result": false})))
-        }
+    let password = match take_param!(map, "password", Value::String) {
+        Some(user) => user,
+        None => { return Ok(response_json(json!({"result": false}))) }
     };
     println!("[+] Password {}", password);
 
@@ -131,9 +126,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     // 見つからないとOption None
     let user: User = match User::find_by("username", username) {
         Some(user) => { user },
-        None => {
-            return Ok(response_json(json!({"result": false})))
-        }
+        None => { return Ok(response_json(json!({"result": false}))) }
     };
 
     if user.password != password_hash {
