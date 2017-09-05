@@ -209,69 +209,51 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             Some(&Value::String(ref name)) => Some(name),
             _ => None,
         };
-        
+
         if token.is_none() {
             println!("[!] Invite token is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "invalid parameter"})))
         }
-        
+
         if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
             println!("[!] Invalid token");
-            let mut h = HashMap::new();
-            h.insert("result", "Invalid invite token");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "Invalid invite token"})))
         }
-        
+
         let username = match map.find(&["username"]){
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
         };
-        
+
         if username.is_none() {
             println!("[!] Username is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "invalid parameter"})))
         }
-        
+
         if username.unwrap() == "" {
             println!("[!] Username is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "username is empty"})))
         }
-        
+
         println!("[+] Username {}", username.unwrap());
-        
+
         let password = match map.find(&["password"]) {
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
         };
-        
+
         if password.is_none() {
             println!("[!] Password is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "invalid parameter"})))
         }
-        
+
         if password.unwrap() == "" {
             println!("[!] Password is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "password is empty"})))
         }
-        
+
         println!("[+] Password {}", password.unwrap());
-        
+
         let email = match map.find(&["email"]) {
             Some(&Value::String(ref name))  => Some(name),
             _ => None,
@@ -279,18 +261,12 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
         if email.is_none() {
             println!("[!] Email is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "invalid parameter"})))
         }
 
         if email.unwrap() == "" {
             println!("[!] Email is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "email is empty"})))
         }
 
         // TODO メールアドレスの検証
@@ -305,12 +281,9 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             !email_splited[1].is_ascii()
         {
             println!("[!] Email validation error");
-            let mut h = HashMap::new();
-            h.insert("result", "email validation error");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "email validation error"})))
         }
-        
+
         println!("[+] Email {}", email.unwrap());
 
         let bio = match map.find(&["bio"]) {
@@ -320,23 +293,16 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
         if bio.is_none() {
             println!("[!] bio is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "invalid parameter"})))
         }
 
         if bio.unwrap() == "" {
             println!("[!] Bio is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": "bio is empty"})))
         }
-        
+
         println!("[+] Bio {}", bio.unwrap());
 
-        // to_string() means &str to std::string::String;
         let result = User::new(email.unwrap().to_string(),
                   username.unwrap().to_string(),
                   password.unwrap().to_string(),
@@ -347,18 +313,12 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             Ok(_) => { println!("[+] User registered"); }
             Err(err_str) => {
                 println!("{}", err_str);
-
-                let mut h = HashMap::new();
-                h.insert("result", err_str);
-                return Ok(Response::with(
-                    (status::Ok, json::encode(&h).unwrap())));
+                return Ok(response_json(json!({"result": err_str})))
             }
         }
     }
-    let mut h = HashMap::new();
-    h.insert("result", true);
-    return Ok(Response::with(
-        (status::Ok, json::encode(&h).unwrap())));
+
+    Ok(response_json(json!({"result": true})))
 }
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
