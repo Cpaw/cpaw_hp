@@ -107,10 +107,10 @@ pub fn users_json(req: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, payload)))
 }
 */
-pub fn random(req: &mut Request) -> IronResult<Response> {
 
+pub fn random(req: &mut Request) -> IronResult<Response> {
     println!("[+] Called random");
-    
+
     let mut data = HashMap::new();
     let mut resp = Response::new();
     let mut rng = thread_rng();
@@ -122,7 +122,7 @@ pub fn random(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
-    
+    println!("[+] Called register_get");
     let filename = "register.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -131,22 +131,16 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
         "js": ["register.js"],
     });
 
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+
+    Ok(response_html(html_str))
 }
 
 pub fn register_post(req: &mut Request) -> IronResult<Response> {
-    
-    
-    println!("[+] Called register");
+    println!("[+] Called register_post");
+
     {
         let map = req.get_ref::<Params>().unwrap();
 
@@ -307,9 +301,8 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn timer(req: &mut Request) -> IronResult<Response> {
-    
     println!("[+] Called timer");
-    
+
     let mut resp = Response::new();
     let data: HashMap<String, String> = HashMap::new();
     resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
@@ -332,7 +325,6 @@ pub fn template_html(filename: &str) -> Handlebars {
 }
 
 pub fn users(req: &mut Request) -> IronResult<Response> {
-
     let filename = "users.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -341,20 +333,15 @@ pub fn users(req: &mut Request) -> IronResult<Response> {
         "js": ["member.js", "jquery.csv.js", "minigrid.min.js"],
         "users_ob": User::all(),
     });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+
+    Ok(response_html(html_str))
 }
 
 pub fn about(req: &mut Request) -> IronResult<Response> {
-
     let filename = "about.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -362,20 +349,14 @@ pub fn about(req: &mut Request) -> IronResult<Response> {
         "css": ["about.css"],
     });
 
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+
+    Ok(response_html(html_str))
 }
 
 pub fn index(req: &mut Request) -> IronResult<Response> {
-
     let filename = "index.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -383,36 +364,27 @@ pub fn index(req: &mut Request) -> IronResult<Response> {
         "index": true,
         "css": ["index.css"],
     });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+
+    Ok(response_html(html_str))
 }
 
 pub fn activity(req: &mut Request) -> IronResult<Response> {
-
     let filename = "activity.hbs";
     let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["activity.css"],
     });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+
+    Ok(response_html(html_str))
 }
 
 // URLを基に更新対象のUserを返す
