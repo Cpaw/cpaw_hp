@@ -19,6 +19,9 @@ use user::User;
 use routing::template_html;
 use rustc_serialize::json;
 
+use routing::response_html;
+use routing::response_json;
+
 // セッションに保存される情報
 struct UserSession {
     id: String
@@ -37,16 +40,15 @@ impl iron_sessionstorage::Value for UserSession {
 }
 
 pub fn current_user_json(req: &mut Request) -> IronResult<Response> {
-    
-    let mut h = HashMap::new();
-    if is_logged_in(req) {
-        println!("[+] Called current_user_json");
-        let crrnt_user = current_user(req).unwrap();
-        h.insert("session", crrnt_user.username);
+    println!("[+] Called current_user_json");
+
+    let session = if is_logged_in(req) {
+        current_user(req).unwrap().username
     } else {
-        h.insert("session", "guest".to_string());
-    }
-    return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));    
+        "guest".to_string()
+    };
+
+    Ok(response_json(json!({"session": session})))
 }
 
 pub fn current_user(req: &mut Request) -> Result<User, String> {
@@ -76,69 +78,48 @@ pub fn is_logged_in(req: &mut Request) -> bool {
     current_user(req).is_ok()
 }
 
-pub fn login_get(req: &mut Request) -> IronResult<Response> {    
+pub fn login_get(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called login_get");
 
     if is_logged_in(req) {
-        // if try!(req.session().get::<UserSession>()).is_some() {
-        // Already logged in
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));
     }
-    
+
     let filename = "login.hbs";
     let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
         "css": ["about.css", "register.css"],
     });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
         |e| format!("{}", e),
     );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    Ok(resp)
-        
+
+    Ok(response_html(html_str))
 }
 
 pub fn login_post(req: &mut Request) -> IronResult<Response> {
-    
+    println!("[+] Called login_post");
+
     if is_logged_in(req) {
-        // if try!(req.session().get::<UserSession>()).is_some() {
-        // Already logged in
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));
     }
-    
-    // セッションにUserSessionがあるなら
-    // println!("{}", req.session().get::<UserSession>().unwrap().unwrap().id);
-    
+
     let map = req.get_ref::<Params>().unwrap().clone();
 
     let username:&String = match map.find(&["username"]) {
         Some(&Value::String(ref value))  => { value },
         _ => {
-            let mut h = HashMap::new();            
-            h.insert("result", false);
-            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": false})))
         }
     };
-    
-    // let email = {
-    //     println!("Enter email block");
-    //     let formdata = iexpect!(req.get_ref::<UrlEncodedBody>().ok());
-    //     println!("{:?}", formdata);
-    //     iexpect!(formdata.get("email"))[0].to_owned()
-    // };
+
     println!("[+] Username {}", username);
-    
+
     let password:&String = match map.find(&["password"]) {
         Some(&Value::String(ref value))  => { value },
         _ => {
-            let mut h = HashMap::new();
-            h.insert("result", false);
-            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": false})))
         }
     };
     println!("[+] Password {}", password);
@@ -151,28 +132,20 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     let user: User = match User::find_by("username", username) {
         Some(user) => { user },
         None => {
-            let mut h = HashMap::new();
-            h.insert("result", false);
-            return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));
+            return Ok(response_json(json!({"result": false})))
         }
     };
 
     if user.password != password_hash {
         println!("Invalid password");
-        // passwordが一致しなかったら適当にリダイレクト
-        let mut h = HashMap::new();
-        h.insert("result", false);
-        return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));        
+        return Ok(response_json(json!({"result": false})))
     }
 
     println!("[ ] Save session");
     // セッションにユーザー名を保存
     try!( req.session().set(UserSession { id: user.id.to_string() }) );
 
-    // '/'にリダイレクト
-    let mut h = HashMap::new();
-    h.insert("result", true);
-    return Ok(Response::with((status::Ok, json::encode(&h).unwrap())));        
+    Ok(response_json(json!({"result": true})))
 }
 
 pub fn logout(req: &mut Request) -> IronResult<Response> {
