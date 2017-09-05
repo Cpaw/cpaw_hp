@@ -22,6 +22,16 @@ use rustc_serialize::json;
 use user::User;
 use rand::{thread_rng, Rng};
 
+// take_param!(map, "key", Value::String) でOption<String>な値を取り出す
+macro_rules! take_param {
+    ($map:expr, $key:expr, $type:path) => {
+        match $map.find(&[$key]) {
+            Some(&$type(ref value)) => Some(value),
+            _ => None,
+        }
+    }
+}
+
 /*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
     
