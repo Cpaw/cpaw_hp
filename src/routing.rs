@@ -98,6 +98,20 @@ pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
     Ok(target_user)
 }
 
+// TODO メールアドレスの検証
+pub fn email_valid(email: &String) -> bool {
+    // 1. @で分割した際に要素が２つかどうか
+    // 2. 分割した各要素がasciiのprintabeかどうか
+    // 3. 分割した各要素に半角スペース等の区切り文字がないか
+    // 4. 名前解決できるかどうか
+    use std::ascii::AsciiExt;
+
+    let email_splited: Vec<&str> = email.split("@").collect();
+
+    email_splited.len() != 2 ||
+        !email_splited[0].is_ascii() ||
+        !email_splited[1].is_ascii()
+}
 
 /*
 pub fn blog(req: &mut Request) -> IronResult<Response> {
@@ -256,17 +270,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
         return Ok(response_json(json!({"result": "email is empty"})))
     }
 
-    // TODO メールアドレスの検証
-    // 1. @で分割した際に要素が２つかどうか
-    // 2. 分割した各要素がasciiのprintabeかどうか
-    // 3. 分割した各要素に半角スペース等の区切り文字がないか
-    // 4. 名前解決できるかどうか
-    use std::ascii::AsciiExt;
-    let email_splited: Vec<&str> = email.unwrap().split("@").collect();
-    if email_splited.len() != 2 ||
-        !email_splited[0].is_ascii() ||
-        !email_splited[1].is_ascii()
-    {
+    if email_valid(email.unwrap()) {
         println!("[!] Email validation error");
         return Ok(response_json(json!({"result": "email validation error"})))
     }
