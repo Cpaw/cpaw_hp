@@ -11,15 +11,15 @@ use self::crypto::digest::Digest;
 use self::rusqlite::Connection;
 use self::rusqlite::types::ToSql;
 
-use self::serde::ser::{Serialize, Serializer, SerializeStruct};
-
 
 pub fn get_connection() -> Connection {
     let db_path = env::var("DATABASE_URL").expect("Please set 'DATABASE_URL' environment variable");
     Connection::open(db_path).unwrap()
 }
 
+
 #[derive(Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
@@ -164,18 +164,5 @@ impl User {
             Some(user) => { Ok(user) },
             None => { Err("Failed to register new user".to_string()) }
         };
-    }
-}
-
-impl Serialize for User {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer
-    {
-        let mut s = serializer.serialize_struct("User", 4)?;
-        s.serialize_field("email", &self.email)?;
-        s.serialize_field("username", &self.username)?;
-        s.serialize_field("bio", &self.bio)?;
-        s.serialize_field("graphic", &self.graphic)?;
-        s.end()
     }
 }
