@@ -123,20 +123,6 @@ pub fn email_valid(email: &String) -> bool {
 
 // --- Routing handlers ---
 
-pub fn random(req: &mut Request) -> IronResult<Response> {
-    println!("[+] Called random");
-
-    let mut data = HashMap::new();
-    let mut resp = Response::new();
-    let mut rng = thread_rng();
-    let mut users = User::all();
-    rng.shuffle(&mut users);
-    data.insert(String::from("users"), users);
-    resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-
 pub fn timer(req: &mut Request) -> IronResult<Response> {
     println!("[+] Called timer");
 
