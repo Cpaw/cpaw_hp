@@ -227,12 +227,20 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Bio {}", bio.unwrap());
 
+    // TODO dummy
+    let twitter:String = "twitter".to_string();
+    let facebook:String = "facebook".to_string();
+    let tags:Vec<String> = vec!["tag1".to_string(), "tag2".to_string()];
+
     let result = User::new(
                     email.unwrap().to_string(),
                     username.unwrap().to_string(),
                     password.unwrap().to_string(),
                     bio.unwrap().to_string(),
-                    username.unwrap().to_string());
+                    username.unwrap().to_string(),
+                    twitter,
+                    facebook,
+                    tags);
 
     match result {
         Ok(_) => { println!("[+] User registered"); }
