@@ -98,20 +98,7 @@ pub fn users_json(req: &mut Request) -> IronResult<Response> {
     let payload = json::encode(&usernames).unwrap();
     Ok(Response::with((status::Ok, payload)))
 }
-*/
-pub fn random(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called random");
-    
-    let mut data = HashMap::new();
-    let mut resp = Response::new();
-    let mut rng = thread_rng();
-    let mut users = User::all();
-    rng.shuffle(&mut users);
-    data.insert(String::from("users"), users);
-    resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
+ */
 
 pub fn register_get(req: &mut Request) -> IronResult<Response> {
     
@@ -532,4 +519,26 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
         println!("[ ] Failed to update user");
         Ok(response_json(json!({"result": "Update failed"})))
     }
+}
+
+pub fn random(req: &mut Request) -> IronResult<Response> {
+
+    let filename = "random.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["about.css"],
+        "js": ["random.js"],
+        "users": User::all()
+    });
+    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+    let mut resp = Response::new();
+    resp
+        .set_mut(rslt_html)
+        .set_mut(status::Ok)
+        .set_mut(Header(headers::ContentType::html()));
+    
+    return Ok(resp);
 }
