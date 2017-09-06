@@ -5,7 +5,11 @@ input {
   font-family:Arial, sans-serif;
   border:solid 1px #ccc;
   margin:0 0 15px;
-  width:300px;
+  width: 300px;
+}
+
+.tags {
+  width: 200px;
 }
 
 label {

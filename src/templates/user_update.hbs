@@ -5,10 +5,10 @@
 		<h2>以下の情報を入力してください</h2>
 		<div id="content">
 			<label>Email<br>
-				<input type="email" name="email" id="email" value={{user.email}} required/><br>
+				<input type="email" name="email" id="email" value="{{user.email}}" required/><br>
 			</label>
 			<label>Username<br>
-				<input type="text" name="username" id="username" value={{user.username}} required/><br>
+				<input type="text" name="username" id="username" value="{{user.username}}" required/><br>
 			</label>
 			<label>Password<br>
 				<input type="password" name="password" id="password" required/><br>
@@ -17,10 +17,21 @@
 				<input type="password" id="password_confirm" required/><br>
 			</label>
 			<label>Bio<br>
-				<textarea rows="15" cols="100" name="bio" id="bio" required>{{user.bio}}</textarea>
+				<textarea rows="10" cols="50" name="bio" id="bio" required>{{user.bio}}</textarea>
 			</label>
-                        <input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}"required/>
 			<br>
+			<label>Twitter username<br>
+				<input type="text" id="twitter" value="{{user.twitter}}" /><br>
+			</label>
+			<label>Facebook username<br>
+				<input type="text" id="facebook" value="{{user.facebook}}" /><br>
+			</label>
+			<label>Tags<br>
+				<input type="text" id="tags0" class="tags" value="{{user.tags.0}}" />
+				<input type="text" id="tags1" class="tags" value="{{user.tags.1}}" />
+				<br>
+			</label>
+			<input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}"required/>
 			<button type="submit" id="apply">Apply</button>
 		</div>
 	</div>

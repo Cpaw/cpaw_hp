@@ -30,13 +30,46 @@ use login::UserSession;
 
 // --- Helpers ---
 
+// enum内の値を取り出す
+macro_rules! cast_enum {
+    ($src:expr, $type:path) => {
+        match $src {
+            $type(v) => Some(v),
+            _ => None
+        }
+    }
+}
+
+// 参照を返す
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
     ($map:expr, $key:expr, $type:path) => {
         match $map.find(&[$key]) {
+            // ラップされたenumの値の参照を返す
             Some(&$type(ref value)) => Some(value),
             _ => None,
         }
+    }
+}
+
+// 実態を返す
+// Option<Vec<TYPE>>
+macro_rules! take_param_array {
+    ($map:expr, $key:expr, $type:path) => {
+        match take_param!($map, $key, params::Value::Array) {
+            Some(param_vec) => {
+                let vec = param_vec
+                    .iter()
+                    .map(|param_val| {
+                        // Clone
+                        cast_enum!(param_val.to_owned(), $type)
+                            .expect(concat!("Expect ", stringify!($type)))
+                    })
+                    .collect::<Vec<_>>();
+                Some(vec)
+            },
+            _ => None
+        };
     }
 }
 
@@ -216,7 +249,7 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
     let bio = take_param!(map, "bio", Value::String);
 
     if bio.is_none() {
-        println!("[!] bio is None");
+        println!("[!] Bio is None");
         return Ok(response_json(json!({"result": "invalid parameter"})))
     }
 
@@ -227,12 +260,42 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Bio {}", bio.unwrap());
 
+    let twitter = match take_param!(map, "twitter", Value::String) {
+        Some(twitter) => twitter.to_owned(),
+        None => {
+            println!("[!] Twitter is None");
+            return Ok(response_json(json!({"result": "invalid parameter"})))
+        }
+    };
+    println!("[+] Twitter {}", twitter);
+
+    let facebook = match take_param!(map, "facebook", Value::String) {
+        Some(facebook) => facebook.to_owned(),
+        None => {
+            println!("[!] Facebook is None");
+            return Ok(response_json(json!({"result": "invalid parameter"})))
+        }
+    };
+    println!("[+] Facebook {}", facebook);
+
+    let tags:Vec<String> = match take_param_array!(map, "tags", Value::String) {
+        Some(tags) => tags,
+        None => {
+            println!("[!] tags is None");
+            return Ok(response_json(json!({"result": "invalid parameter"})))
+        }
+    };
+    println!("[+] Tags {:?}", tags);
+
     let result = User::new(
                     email.unwrap().to_string(),
                     username.unwrap().to_string(),
                     password.unwrap().to_string(),
                     bio.unwrap().to_string(),
-                    username.unwrap().to_string());
+                    username.unwrap().to_string(),
+                    twitter,
+                    facebook,
+                    tags);
 
     match result {
         Ok(_) => { println!("[+] User registered"); }
@@ -372,17 +435,22 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     let username = take_param!(map, "username", Value::String);
     let password = take_param!(map, "password", Value::String);
     let bio      = take_param!(map, "bio", Value::String);
+    let twitter  = take_param!(map, "twitter", Value::String);
+    let facebook = take_param!(map, "facebook", Value::String);
+    let tags:Option<Vec<String>> = take_param_array!(map, "tags", Value::String);
     let csrf_token = take_param!(map, "csrf_token", Value::String);
     
+    println!("[ ] id:       {}", user.id);
     println!("[ ] email:    \"{}\"", email.unwrap_or(&"None".to_string()));
     println!("[ ] username: \"{}\"", username.unwrap_or(&"None".to_string()));
     println!("[ ] password: \"{}\"", password.unwrap_or(&"None".to_string()));
     println!("[ ] bio:      \"{}\"", bio.unwrap_or(&"None".to_string()));
-    
+    println!("[ ] twitter:  \"{}\"", twitter.unwrap_or(&"None".to_string()));
+    println!("[ ] facebook: \"{}\"", facebook.unwrap_or(&"None".to_string()));
+    println!("[ ] tags:     {:?}",   tags.as_ref().unwrap_or(&vec![]));
     println!("[ ] csrf token: \"{}\"", csrf_token.unwrap_or(&"None".to_string()));
 
 
-    
     if csrf_token.unwrap().clone() != make_csrf_token(user.id.to_string()) {
         println!("[!] Invalid csrf token");
         return Ok(response_json(json!({"result": "Invalid csrf token"})));
@@ -415,6 +483,18 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
 
     if bio.is_some() {
         user.bio = bio.unwrap().clone();
+    }
+
+    if twitter.is_some() {
+        user.twitter = twitter.unwrap().clone();
+    }
+
+    if facebook.is_some() {
+        user.facebook = facebook.unwrap().clone();
+    }
+
+    if tags.is_some() {
+        user.tags = tags.unwrap(); // Move
     }
 
     if user.update() {

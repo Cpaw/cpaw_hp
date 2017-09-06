@@ -23,7 +23,10 @@ $(function(){
                 "username": $('input#username').val(),
                 "password": $('input#password').val(),
                 "invite_token": $('input#invite_token').val(),
-                "bio": $('textarea#bio').val()
+                "bio": $('textarea#bio').val(),
+                "twitter": $('input#twitter').val(),
+                "facebook": $('input#facebook').val(),
+                "tags": [$('input#tags0').val(), $('input#tags1').val()],
             },
             dataType: 'json',
             success: function(data, textStatus, jqXHR) {

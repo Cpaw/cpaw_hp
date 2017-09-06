@@ -42,6 +42,9 @@ $(function(){
           "username": $('input#username').val(),
           "password": $('input#password').val(),
           "bio": $('textarea#bio').val(),
+          "twitter": $('input#twitter').val(),
+          "facebook": $('input#facebook').val(),
+          "tags": [$('input#tags0').val(), $('input#tags1').val()],
           "csrf_token": $('input#csrf_token').attr("value")
       },
       dataType: 'json',

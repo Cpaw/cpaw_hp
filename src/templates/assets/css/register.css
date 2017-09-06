@@ -8,6 +8,10 @@ input {
   width:300px;
 }
 
+.tags {
+  width: 200px;
+}
+
 label {
   font-size: 20px;
 }

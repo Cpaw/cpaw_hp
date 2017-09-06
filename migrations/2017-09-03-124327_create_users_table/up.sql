@@ -6,6 +6,7 @@ CREATE TABLE users (
     permission  INTEGER NOT NULL DEFAULT 0,
     bio         TEXT NOT NULL,
     graphic     TEXT NOT NULL,
-    twitter     TEXT,
-    facebook    TEXT
+    twitter     TEXT NOT NULL,
+    facebook    TEXT NOT NULL,
+    tags        TEXT NOT NULL
 );

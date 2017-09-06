@@ -1,6 +1,7 @@
 extern crate crypto;
 extern crate rusqlite;
 extern crate serde;
+extern crate serde_json;
 
 use std::env;
 use std::vec::Vec;
@@ -11,15 +12,15 @@ use self::crypto::digest::Digest;
 use self::rusqlite::Connection;
 use self::rusqlite::types::ToSql;
 
-use self::serde::ser::{Serialize, Serializer, SerializeStruct};
-
 
 pub fn get_connection() -> Connection {
     let db_path = env::var("DATABASE_URL").expect("Please set 'DATABASE_URL' environment variable");
     Connection::open(db_path).unwrap()
 }
 
+
 #[derive(Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: String,
@@ -28,22 +29,33 @@ pub struct User {
     pub permission: i32,
     pub bio: String,
     pub graphic: String,
+    pub twitter: String,
+    pub facebook: String,
+    pub tags: Vec<String>,
 }
 
 impl User {
+    fn tags_from_json_str(json_str: String) -> Vec<String> {
+        serde_json::from_str(&json_str[..]).expect("tags expect Vec<String>")
+    }
+
     pub fn set_password(&mut self, password: &String) {
         let mut sha = Sha512::new();
         sha.input_str(password);
         self.password = sha.result_str();
     }
 
+    pub fn tags_to_json_str(&self) -> String {
+        json!(self.tags).to_string()
+    }
+
     pub fn insert(&self) -> bool {
         let conn = get_connection();
         let result = conn.execute(
-            "INSERT INTO users (email, username, password, permission, bio, graphic)
-               VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            "INSERT INTO users (email, username, password, permission, bio, graphic, twitter, facebook, tags)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             &[&self.email, &self.username, &self.password, &self.permission,
-              &self.bio, &self.graphic]);
+              &self.bio, &self.graphic, &self.twitter, &self.facebook, &self.tags_to_json_str()]);
 
         match result {
             Ok(_) => { true },
@@ -56,10 +68,11 @@ impl User {
         let conn = get_connection();
         let result = conn.execute(
             "UPDATE users SET email=?2, username=?3, password=?4, permission=?5,
-                              bio=?6, graphic=?7
+                              bio=?6, graphic=?7, twitter=?8, facebook=?9, tags=?10
              WHERE id=?1",
             &[&self.id, &self.email, &self.username, &self.password,
-                &self.permission, &self.bio, &self.graphic]);
+                &self.permission, &self.bio, &self.graphic,
+                &self.twitter, &self.facebook, &self.tags_to_json_str()]);
 
         match result {
             Ok(_) => true,
@@ -69,7 +82,7 @@ impl User {
 
     pub fn all() -> Vec<User> {
         let conn = get_connection();
-        let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic FROM users").unwrap();
+        let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic, twitter, facebook, tags FROM users").unwrap();
         let user_iter = stmt.query_map(&[], |row| {
             User {
                 id: row.get(0),
@@ -79,6 +92,9 @@ impl User {
                 permission: 0,
                 bio: row.get(3),
                 graphic: row.get(4),
+                twitter: row.get(5),
+                facebook: row.get(6),
+                tags: User::tags_from_json_str(row.get(7)),
             }
         }).unwrap();
 
@@ -94,7 +110,7 @@ impl User {
         let conn = get_connection();
         // TODO Danger
         let mut stmt = conn.prepare(&format!("SELECT id, email, username, password, permission,
-                                             bio, graphic FROM users WHERE {} = ?", key)[..]).unwrap();
+                                             bio, graphic, twitter, facebook, tags FROM users WHERE {} = ?", key)[..]).unwrap();
         let result_users = stmt.query_map(&[value], |row| {
             User {
                 id: row.get(0),
@@ -104,6 +120,9 @@ impl User {
                 permission: row.get(4),
                 bio: row.get(5),
                 graphic: row.get(6),
+                twitter: row.get(7),
+                facebook: row.get(8),
+                tags: User::tags_from_json_str(row.get(9)),
             }
         });
 
@@ -136,7 +155,8 @@ impl User {
     }
 
     pub fn new(email: String, username: String, password: String,
-               bio: String, graphic: String) -> Result<User, String> {
+               bio: String, graphic: String,
+               twitter: String, facebook: String, tags: Vec<String>) -> Result<User, String> {
         if User::find_by(&"email", &email).is_some() {
             return Err("This email already registered".to_string());
         }
@@ -153,6 +173,9 @@ impl User {
             permission: 0,
             bio: bio,
             graphic: graphic,
+            twitter: twitter,
+            facebook: facebook,
+            tags: tags,
         };
         u.set_password(&password);
 
@@ -164,18 +187,5 @@ impl User {
             Some(user) => { Ok(user) },
             None => { Err("Failed to register new user".to_string()) }
         };
-    }
-}
-
-impl Serialize for User {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer
-    {
-        let mut s = serializer.serialize_struct("User", 4)?;
-        s.serialize_field("email", &self.email)?;
-        s.serialize_field("username", &self.username)?;
-        s.serialize_field("bio", &self.bio)?;
-        s.serialize_field("graphic", &self.graphic)?;
-        s.end()
     }
 }
