@@ -30,13 +30,46 @@ use login::UserSession;
 
 // --- Helpers ---
 
+// enum内の値を取り出す
+macro_rules! cast_enum {
+    ($src:expr, $type:path) => {
+        match $src {
+            $type(v) => Some(v),
+            _ => None
+        }
+    }
+}
+
+// 参照を返す
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
     ($map:expr, $key:expr, $type:path) => {
         match $map.find(&[$key]) {
+            // ラップされたenumの値の参照を返す
             Some(&$type(ref value)) => Some(value),
             _ => None,
         }
+    }
+}
+
+// 実態を返す
+// Option<Vec<TYPE>>
+macro_rules! take_param_array {
+    ($map:expr, $key:expr, $type:path) => {
+        match take_param!($map, $key, params::Value::Array) {
+            Some(param_vec) => {
+                let vec = param_vec
+                    .iter()
+                    .map(|param_val| {
+                        // Clone
+                        cast_enum!(param_val.to_owned(), $type)
+                            .expect(concat!("Expect ", stringify!($type)))
+                    })
+                    .collect::<Vec<_>>();
+                Some(vec)
+            },
+            _ => None
+        };
     }
 }
 
