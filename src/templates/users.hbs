@@ -14,16 +14,17 @@
 					<span class="demo-card-image__filename">{{username}}</span>
 				</div>
 				<div class="mdl-card__skills">
-					<p>Security</p>
-					<p>MachineLearning</p>
+					{{#each tags}}
+					<p>{{this}}</p>
+					{{/each}}
 				</div>
 				<div class="mdl-hide">
 					<div class="mdl-card__explain">
 						{{bio}}
 					</div>
 					<div class="mdl-card__links">
-						<a class="card_twitter" target="_blank" href="https://twitter.com/porisuteru"><img src="assets/img/member/twitter.png"></a>
-						<a class="card_facebook" target="_blank" href="https://facebook.com/palloc1"><img src="assets/img/member/facebook.png"></a>	
+						<a class="card_twitter" target="_blank" href="https://twitter.com/{{twitter}}"><img src="assets/img/member/twitter.png"></a>
+						<a class="card_facebook" target="_blank" href="https://facebook.com/{{facebook}}"><img src="assets/img/member/facebook.png"></a>	
 					</div>
 				</div>
 			</div>
