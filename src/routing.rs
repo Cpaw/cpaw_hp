@@ -28,6 +28,7 @@ use login;
 use login::UserSession;
 
 
+// --- Helpers ---
 
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
 macro_rules! take_param {
@@ -39,285 +40,9 @@ macro_rules! take_param {
     }
 }
 
-pub fn response_json(json: serde_json::Value) -> Response {
-    Response::new()
-        .set(status::Ok)
-        .set(Header(headers::ContentType::json()))
-        .set(json.to_string())
-}
-
-/*
-pub fn blog(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called blog");
-
-    let mut resp = Response::new();
-    let mut data = HashMap::new();
-    
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT id, title, author, body FROM blog").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-         Blog {
-             id: row.get(0),
-             title: row.get(1),
-             author: row.get(2),
-             body: row.get(3),
-         }
-    }).unwrap();
-    
-    let mut v = Vec::new();
-    for user in user_iter {
-        
-        let mut hash: HashMap<String, String> = HashMap::new();
-        let userUnwrapped = user.unwrap();
-        
-        hash.insert(String::from("id"), userUnwrapped.id.to_string());
-        hash.insert(String::from("title"), userUnwrapped.title);
-        hash.insert(String::from("body"), userUnwrapped.body);
-        hash.insert(String::from("author"), userUnwrapped.author);
-        v.push(hash);
-        
-    }
-    
-    data.insert(String::from("blog"), v);
-    resp.set_mut(Template::new("blog", data)).set_mut(status::Ok);
-    
-    return Ok(resp);
-}
-*/
-/*
-pub fn users_json(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called random");
-    
-    let conn = Connection::open("./sqlite3.db").unwrap();
-    let mut stmt = conn.prepare("SELECT username FROM user").unwrap();
-    let user_iter = stmt.query_map(&[], |row| {
-        let a:String = row.get(0);
-        a
-    }).unwrap();
-
-    let mut v2 = Vec::new();
-    for user in user_iter {
-        v2.push(user.unwrap());
-    }
-    let usernames = UserNames { usernames: v2 };
-    let payload = json::encode(&usernames).unwrap();
-    Ok(Response::with((status::Ok, payload)))
-}
-*/
-pub fn random(req: &mut Request) -> IronResult<Response> {
-
-    println!("[+] Called random");
-    
-    let mut data = HashMap::new();
-    let mut resp = Response::new();
-    let mut rng = thread_rng();
-    let mut users = User::all();
-    rng.shuffle(&mut users);
-    data.insert(String::from("users"), users);
-    resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
-pub fn register_get(req: &mut Request) -> IronResult<Response> {
-    
-    let filename = "register.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "css": ["about.css", "register.css"],
-        "js": ["register.js"],
-    });
-
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
-}
-
-pub fn register_post(req: &mut Request) -> IronResult<Response> {
-    
-    
-    println!("[+] Called register");
-    {
-        let map = req.get_ref::<Params>().unwrap();
-
-        let token = match map.find(&["invite_token"]) {
-            Some(&Value::String(ref name)) => Some(name),
-            _ => None,
-        };
-        
-        if token.is_none() {
-            println!("[!] Invite token is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
-            println!("[!] Invalid token");
-            let mut h = HashMap::new();
-            h.insert("result", "Invalid invite token");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        let username = match map.find(&["username"]){
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
-        
-        if username.is_none() {
-            println!("[!] Username is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        if username.unwrap() == "" {
-            println!("[!] Username is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        println!("[+] Username {}", username.unwrap());
-        
-        let password = match map.find(&["password"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
-        
-        if password.is_none() {
-            println!("[!] Password is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        if password.unwrap() == "" {
-            println!("[!] Password is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        println!("[+] Password {}", password.unwrap());
-        
-        let email = match map.find(&["email"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
-
-        if email.is_none() {
-            println!("[!] Email is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-
-        if email.unwrap() == "" {
-            println!("[!] Email is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-
-        // TODO メールアドレスの検証
-        // 1. @で分割した際に要素が２つかどうか
-        // 2. 分割した各要素がasciiのprintabeかどうか
-        // 3. 分割した各要素に半角スペース等の区切り文字がないか
-        // 4. 名前解決できるかどうか
-        use std::ascii::AsciiExt;
-        let email_splited: Vec<&str> = email.unwrap().split("@").collect();
-        if email_splited.len() != 2 ||
-            !email_splited[0].is_ascii() ||
-            !email_splited[1].is_ascii()
-        {
-            println!("[!] Email validation error");
-            let mut h = HashMap::new();
-            h.insert("result", "email validation error");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        println!("[+] Email {}", email.unwrap());
-
-        let bio = match map.find(&["bio"]) {
-            Some(&Value::String(ref name))  => Some(name),
-            _ => None,
-        };
-
-        if bio.is_none() {
-            println!("[!] bio is None");
-            let mut h = HashMap::new();
-            h.insert("result", "invalid parameter");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-
-        if bio.unwrap() == "" {
-            println!("[!] Bio is empty");
-            let mut h = HashMap::new();
-            h.insert("result", "parameter is empty");
-            return Ok(Response::with((status::Ok,
-                                      json::encode(&h).unwrap())));
-        }
-        
-        println!("[+] Bio {}", bio.unwrap());
-
-        // to_string() means &str to std::string::String;
-        let result = User::new(email.unwrap().to_string(),
-                  username.unwrap().to_string(),
-                  password.unwrap().to_string(),
-                  bio.unwrap().to_string(),
-                  username.unwrap().to_string());
-
-        match result {
-            Ok(_) => { println!("[+] User registered"); }
-            Err(err_str) => {
-                println!("{}", err_str);
-
-                let mut h = HashMap::new();
-                h.insert("result", err_str);
-                return Ok(Response::with(
-                    (status::Ok, json::encode(&h).unwrap())));
-            }
-        }
-    }
-    let mut h = HashMap::new();
-    h.insert("result", true);
-    return Ok(Response::with(
-        (status::Ok, json::encode(&h).unwrap())));
-}
-
-pub fn timer(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called timer");
-    
-    let mut resp = Response::new();
-    let data: HashMap<String, String> = HashMap::new();
-    resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
-    return Ok(resp);
-}
-
 pub fn template_html(filename: &str) -> Handlebars {
     let mut handlebars = Handlebars::new();
-    
+
     handlebars
         .register_template_file(filename, &Path::new(&["src/templates/", filename].join("")))
         .ok()
@@ -330,88 +55,18 @@ pub fn template_html(filename: &str) -> Handlebars {
     handlebars
 }
 
-pub fn users(req: &mut Request) -> IronResult<Response> {
-
-    let filename = "users.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "css": ["material.css", "member.css"],
-        "js": ["member.js", "jquery.csv.js", "minigrid.min.js"],
-        "users_ob": User::all(),
-    });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+pub fn response_html(html: String) -> Response {
+    Response::new()
+        .set(status::Ok)
+        .set(Header(headers::ContentType::html()))
+        .set(html)
 }
 
-pub fn about(req: &mut Request) -> IronResult<Response> {
-
-    let filename = "about.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "css": ["about.css"],
-    });
-
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
-}
-
-pub fn index(req: &mut Request) -> IronResult<Response> {
-
-    let filename = "index.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "index": true,
-        "css": ["index.css"],
-    });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
-}
-
-pub fn activity(req: &mut Request) -> IronResult<Response> {
-
-    let filename = "activity.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "css": ["activity.css"],
-    });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
+pub fn response_json(json: serde_json::Value) -> Response {
+    Response::new()
+        .set(status::Ok)
+        .set(Header(headers::ContentType::json()))
+        .set(json.to_string())
 }
 
 // URLを基に更新対象のUserを返す
@@ -448,6 +103,226 @@ pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
     }
 
     Ok(target_user)
+}
+
+// TODO メールアドレスの検証
+pub fn email_valid(email: &String) -> bool {
+    // 1. @で分割した際に要素が２つかどうか
+    // 2. 分割した各要素がasciiのprintabeかどうか
+    // 3. 分割した各要素に半角スペース等の区切り文字がないか
+    // 4. 名前解決できるかどうか
+    use std::ascii::AsciiExt;
+
+    let email_splited: Vec<&str> = email.split("@").collect();
+
+    email_splited.len() != 2 ||
+        !email_splited[0].is_ascii() ||
+        !email_splited[1].is_ascii()
+}
+
+
+// --- Routing handlers ---
+
+pub fn random(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called random");
+
+    let mut data = HashMap::new();
+    let mut resp = Response::new();
+    let mut rng = thread_rng();
+    let mut users = User::all();
+    rng.shuffle(&mut users);
+    data.insert(String::from("users"), users);
+    resp.set_mut(Template::new("random", data)).set_mut(status::Ok);
+    return Ok(resp);
+}
+
+pub fn timer(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called timer");
+
+    let mut resp = Response::new();
+    let data: HashMap<String, String> = HashMap::new();
+    resp.set_mut(Template::new("timer", data)).set_mut(status::Ok);
+    return Ok(resp);
+}
+
+pub fn register_get(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called register_get");
+    let filename = "register.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["about.css", "register.css"],
+        "js": ["register.js"],
+    });
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    Ok(response_html(html_str))
+}
+
+pub fn register_post(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called register_post");
+
+    let map = req.get_ref::<Params>().unwrap();
+
+    let token = take_param!(map, "invite_token", Value::String);
+
+    if token.is_none() {
+        println!("[!] Invite token is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if token.unwrap() != &env::var("CPAW_TOKEN").expect("Please set 'CPAW_TOKEN' environment variable") {
+        println!("[!] Invalid token");
+        return Ok(response_json(json!({"result": "Invalid invite token"})))
+    }
+
+    let username = take_param!(map, "username", Value::String);
+
+    if username.is_none() {
+        println!("[!] Username is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if username.unwrap() == "" {
+        println!("[!] Username is empty");
+        return Ok(response_json(json!({"result": "username is empty"})))
+    }
+
+    println!("[+] Username {}", username.unwrap());
+
+    let password = take_param!(map, "password", Value::String);
+
+    if password.is_none() {
+        println!("[!] Password is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if password.unwrap() == "" {
+        println!("[!] Password is empty");
+        return Ok(response_json(json!({"result": "password is empty"})))
+    }
+
+    println!("[+] Password {}", password.unwrap());
+
+    let email = take_param!(map, "email", Value::String);
+
+    if email.is_none() {
+        println!("[!] Email is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if email.unwrap() == "" {
+        println!("[!] Email is empty");
+        return Ok(response_json(json!({"result": "email is empty"})))
+    }
+
+    if email_valid(email.unwrap()) {
+        println!("[!] Email validation error");
+        return Ok(response_json(json!({"result": "email validation error"})))
+    }
+
+    println!("[+] Email {}", email.unwrap());
+
+    let bio = take_param!(map, "bio", Value::String);
+
+    if bio.is_none() {
+        println!("[!] bio is None");
+        return Ok(response_json(json!({"result": "invalid parameter"})))
+    }
+
+    if bio.unwrap() == "" {
+        println!("[!] Bio is empty");
+        return Ok(response_json(json!({"result": "bio is empty"})))
+    }
+
+    println!("[+] Bio {}", bio.unwrap());
+
+    let result = User::new(
+                    email.unwrap().to_string(),
+                    username.unwrap().to_string(),
+                    password.unwrap().to_string(),
+                    bio.unwrap().to_string(),
+                    username.unwrap().to_string());
+
+    match result {
+        Ok(_) => { println!("[+] User registered"); }
+        Err(err_str) => {
+            println!("{}", err_str);
+            return Ok(response_json(json!({"result": err_str})))
+        }
+    }
+
+    Ok(response_json(json!({"result": true})))
+}
+
+pub fn users(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called users");
+    let filename = "users.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["material.css", "member.css"],
+        "js": ["member.js", "jquery.csv.js", "minigrid.min.js"],
+        "users_ob": User::all(),
+    });
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    Ok(response_html(html_str))
+}
+
+pub fn about(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called about");
+    let filename = "about.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["about.css"],
+    });
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    Ok(response_html(html_str))
+}
+
+pub fn index(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called index");
+    let filename = "index.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "index": true,
+        "css": ["index.css"],
+    });
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    Ok(response_html(html_str))
+}
+
+pub fn activity(req: &mut Request) -> IronResult<Response> {
+    println!("[+] Called activity");
+    let filename = "activity.hbs";
+    let handlebars = template_html(filename);
+    let data = json!({
+        "parent": "base",
+        "css": ["activity.css"],
+    });
+
+    let html_str = handlebars.render(filename, &data).unwrap_or_else(
+        |e| format!("{}", e),
+    );
+
+    Ok(response_html(html_str))
 }
 
 pub fn make_csrf_token(id: String) -> String {
