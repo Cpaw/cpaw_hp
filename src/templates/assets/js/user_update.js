@@ -38,10 +38,11 @@ $(function(){
       type: 'PATCH',
       url: 'http://localhost:3000/user/' + username,
       data: {
-        "email": $('input#email').val(),
-        "username": $('input#username').val(),
-        "password": $('input#password').val(),
-        "bio": $('textarea#bio').val()
+          "email": $('input#email').val(),
+          "username": $('input#username').val(),
+          "password": $('input#password').val(),
+          "bio": $('textarea#bio').val(),
+          "csrf_token": $('input#csrf_token').attr("value")
       },
       dataType: 'json',
       success: function(data, textStatus, jqXHR) {

@@ -19,6 +19,7 @@
 			<label>Bio<br>
 				<textarea rows="15" cols="100" name="bio" id="bio" required>{{user.bio}}</textarea>
 			</label>
+                        <input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}"required/>
 			<br>
 			<button type="submit" id="apply">Apply</button>
 		</div>
