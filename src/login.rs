@@ -76,7 +76,7 @@ pub fn is_logged_in(req: &mut Request) -> bool {
     current_user(req).is_ok()
 }
 
-pub fn login_get(req: &mut Request) -> IronResult<Response> {    
+pub fn login_get(req: &mut Request) -> IronResult<Response> {
 
     if is_logged_in(req) {
         // if try!(req.session().get::<UserSession>()).is_some() {
@@ -168,7 +168,7 @@ pub fn login_post(req: &mut Request) -> IronResult<Response> {
     println!("[ ] Save session");
     // セッションにユーザー名を保存
     try!( req.session().set(UserSession { id: user.id.to_string() }) );
-
+    
     // '/'にリダイレクト
     let mut h = HashMap::new();
     h.insert("result", true);

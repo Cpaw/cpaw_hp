@@ -4,13 +4,18 @@ extern crate handlebars_iron as hbs;
 extern crate params;
 extern crate crypto;
 extern crate serde_json;
+extern crate iron_sessionstorage;
 
 use std::env;
 use std::path::Path;
+use std::io::Read;
 use std::collections::HashMap;
 use iron::prelude::*;
 use iron::{headers, status};
 use iron::modifiers::{Redirect,Header};
+use self::iron_sessionstorage::traits::*;
+use self::crypto::sha2::Sha512;
+use self::crypto::digest::Digest;
 use router::url_for;
 use router::Router;
 use handlebars::Handlebars;
@@ -20,6 +25,8 @@ use rustc_serialize::json;
 use user::User;
 use rand::{thread_rng, Rng};
 use login;
+use login::UserSession;
+
 
 
 // take_param!(map, "key", Value::String) でOption<String>な値を取り出す
@@ -443,14 +450,25 @@ pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
     Ok(target_user)
 }
 
-pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
-    println!("[+] Called user_update_get");
+pub fn make_csrf_token(id: String) -> String {
+    let mut buf = id + &env::var("CPAW_TOKEN").unwrap();
+    let mut sha = Sha512::new();
+    sha.input_str(&buf);
+    sha.result_str()
+}
 
+pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
+
+    println!("[+] Called user_update_get");
+    let mut id = req.session().get::<UserSession>().unwrap().unwrap().id.to_string();
     let target_user = match user_update_valid(req) {
         Ok(user) => user,
         Err(res) => { return Ok(res); }
     };
 
+    let csrf_token = make_csrf_token(
+        req.session().get::<UserSession>().unwrap().unwrap().id.to_string()
+    );
     let filename = "user_update.hbs";
     let handlebars = template_html(filename);
     let data = json!({
@@ -458,6 +476,7 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
         "css": ["about.css", "user_update.css"],
         "js": ["user_update.js"],
         "user": target_user,
+        "csrf_token": csrf_token
     });
 
     let html:String = handlebars.render(filename, &data).unwrap_or_else(
@@ -474,6 +493,8 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
+
+    let user = req.session().get::<UserSession>().unwrap().unwrap();
     println!("[+] Called user_update_patch");
 
     let mut user:User = match user_update_valid(req) {
@@ -483,18 +504,28 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
             return Ok(response_json(json));
         }
     };
-
+    
     let map = req.get_ref::<Params>().unwrap();
     let email    = take_param!(map, "email", Value::String);
     let username = take_param!(map, "username", Value::String);
     let password = take_param!(map, "password", Value::String);
     let bio      = take_param!(map, "bio", Value::String);
-
+    let csrf_token = take_param!(map, "csrf_token", Value::String);
+    
     println!("[ ] email:    \"{}\"", email.unwrap_or(&"None".to_string()));
     println!("[ ] username: \"{}\"", username.unwrap_or(&"None".to_string()));
     println!("[ ] password: \"{}\"", password.unwrap_or(&"None".to_string()));
     println!("[ ] bio:      \"{}\"", bio.unwrap_or(&"None".to_string()));
+    
+    println!("[ ] csrf token: \"{}\"", csrf_token.unwrap_or(&"None".to_string()));
 
+
+    
+    if csrf_token.unwrap().clone() != make_csrf_token(user.id.to_string()) {
+        println!("[!] Invalid csrf token");
+        return Ok(response_json(json!({"result": "Invalid csrf token"})));
+    }
+    
     fn already_used(target_user: &User, key: &str, new_value: &String) -> bool{
         match User::find_by(key, new_value) {
             Some(u) => u.id != target_user.id,
