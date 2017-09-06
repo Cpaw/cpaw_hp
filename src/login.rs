@@ -23,8 +23,8 @@ use routing::response_html;
 use routing::response_json;
 
 // セッションに保存される情報
-struct UserSession {
-    id: String
+pub struct UserSession {
+    pub id: String
 }
 
 impl iron_sessionstorage::Value for UserSession {
