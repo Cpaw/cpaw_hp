@@ -1,6 +1,6 @@
 $(function() {
     /* ログイン処理 */
-    $('button#login').on('click', function(e) {
+    $('button#submit').on('click', function(e) {
 
         
         $.ajax({
