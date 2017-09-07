@@ -36,7 +36,7 @@ $(function() {
         if(username != "guest") {
             $('a#login').attr("href", "/user/" + username).text(username).attr('data-title', username);
             $('ul').append($('<li></li>').append(
-                $('<a></a>').attr("href", "logout").attr("data-title", "logout").text("logout"))
+                $('<a></a>').attr("href", "/logout").attr("data-title", "logout").text("logout"))
                           );
         }
     })
