@@ -104,6 +104,8 @@ pub fn response_json(json: serde_json::Value) -> Response {
 
 // URLを基に更新対象のUserを返す
 pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
+
+    println!("[+] Called user update valid");
     let target_username:String = req.extensions
         .get::<Router>().unwrap()
         .find("username").unwrap_or("/")
@@ -128,7 +130,7 @@ pub fn user_update_valid(req: &mut Request) -> Result<User,Response> {
             return Err(Response::with((status::Found, Redirect(url_for!(req, "register")))));
         }
     };
-
+    //println!("[+] passed exsists"); PASS
     // 自身 or 権限持ち
     if current_user.username != target_user.username && current_user.permission != 1 {
         println!("[ ] Different user or not permission");
@@ -376,6 +378,9 @@ pub fn activity(req: &mut Request) -> IronResult<Response> {
 }
 
 pub fn make_csrf_token(id: String) -> String {
+    
+    println!("[+] Called make_csrf_token");
+    
     let mut buf = id + &env::var("CPAW_TOKEN").unwrap();
     let mut sha = Sha512::new();
     sha.input_str(&buf);
@@ -385,6 +390,11 @@ pub fn make_csrf_token(id: String) -> String {
 pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
 
     println!("[+] Called user_update_get");
+    
+    if !login::is_logged_in(req) {
+        return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));        
+    }
+    
     let mut id = req.session().get::<UserSession>().unwrap().unwrap().id.to_string();
     let target_user = match user_update_valid(req) {
         Ok(user) => user,
@@ -394,6 +404,7 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
     let csrf_token = make_csrf_token(
         req.session().get::<UserSession>().unwrap().unwrap().id.to_string()
     );
+    
     let filename = "user_update.hbs";
     let handlebars = template_html(filename);
     let data = json!({
