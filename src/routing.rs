@@ -294,7 +294,6 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
                     username.unwrap().to_string(),
                     password.unwrap().to_string(),
                     bio.unwrap().to_string(),
-                    username.unwrap().to_string(),
                     twitter,
                     facebook,
                     tags);
