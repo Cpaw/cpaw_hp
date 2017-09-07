@@ -1,17 +1,24 @@
 $(function(){
-    $.getJSON('http://localhost:3000/users_json', function(d) {
-        usernames = d["usernames"];
-        for(var i = usernames.length - 1; i > 0; i--){
-            var r = Math.floor(Math.random() * (i + 1));
-            var tmp = usernames[i];
-            usernames[i] = usernames[r];
-            usernames[r] = tmp;
-        }
-        $.each(usernames, function(i, val) {
+    
+
+    $('button#start').on('click', function(e) {
+        
+        var cand=[];
+        $("[name='user[]']:checked").each(function(){
+            cand.push(this.value);
+        });
+        
+        // 配列をシャッフル
+        let shuffle = function() {return Math.random()-.5};
+        cand.sort(shuffle);
+
+        $('div#content').children().remove();
+        $.each(cand, function(i, v) {
             $('div#content').append(
-                $('<p style="text-align: center;"></p>').text(i + "番目: " + val)
+                $('<h3></h3>').text((i+1) + "番目: " + v)
             );
         });
+        $("[name='user[]']").prop('checked', false);
     });
 });
 

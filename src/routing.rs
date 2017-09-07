@@ -518,7 +518,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     }
 }
 
-pub fn random(req: &mut Request) -> IronResult<Response> {
+pub fn random_get(req: &mut Request) -> IronResult<Response> {
 
     let filename = "random.hbs";
     let handlebars = template_html(filename);
