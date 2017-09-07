@@ -448,32 +448,3 @@ pub fn random_get(req: &mut Request) -> IronResult<Response> {
     
     return Ok(resp);
 }
-
-pub fn random_post(req: &mut Request) -> IronResult<Response> {
-    
-    println!("[+] Called random_post");
-    let mut payload = String::new();
-    req.body.read_to_string(&mut payload).unwrap();
-    let request: Vec<String> = json::decode(&payload).unwrap();
-    println!("Usernames: {:?}", request);
-    
-    
-    let filename = "random.hbs";
-    let handlebars = template_html(filename);
-    let data = json!({
-        "parent": "base",
-        "css": ["about.css"],
-        "js": ["random.js"],
-        "users": User::all()
-    });
-    let rslt_html = handlebars.render(filename, &data).unwrap_or_else(
-        |e| format!("{}", e),
-    );
-    let mut resp = Response::new();
-    resp
-        .set_mut(rslt_html)
-        .set_mut(status::Ok)
-        .set_mut(Header(headers::ContentType::html()));
-    
-    return Ok(resp);
-}
