@@ -4,9 +4,12 @@
                   <div id="about">
                     <h2>順番</h2>
                     <div id="content">
-                      {{#each users}}
-                      <p style="text-align: center;">{{username}}</p>
-                      {{/each}}
+                    <p>
+                       {{#each users}}
+                       <input type="checkbox" name="user[]" value="{{this.username}}">{{this.username}}
+                       {{/each}}
+                    </p>
+                    <button type="submit" id="start">Start</button>
                     </div>
                   </div>
 {{/inline}}

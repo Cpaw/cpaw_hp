@@ -44,7 +44,8 @@ fn main() {
     router.get("/users", routing::users, "users");
     router.get("/about", routing::about, "about");
     //router.get("/blog", routing::blog, "blog");
-    router.get("/random", routing::random, "random");
+    router.get("/random", routing::random_get, "random");
+    router.post("/random", routing::random_post, "random");
     router.get("/activity", routing::activity, "activity");
     router.get("/login", login::login_get, "login");
     router.post("/login", login::login_post, "login");
@@ -52,7 +53,7 @@ fn main() {
     router.get("/register", routing::register_get, "register");
     router.post("/register", routing::register_post, "register");
     router.get("/timer", routing::timer, "timer");
-    router.get("/username.json", login::current_user_json, "username");
+    //router.get("/username.json", login::usernames, "username");
     router.get("/user/:username", routing::user_update_get, "user_update_get");
     router.patch("/user/:username", routing::user_update_patch, "user_update_patch");
     
