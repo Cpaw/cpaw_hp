@@ -66,7 +66,7 @@ fn main() {
     let mut chain = Chain::new(mount);
     
     // Setup SessionStorage
-    let my_secret = b"verysecret".to_vec(); // TODO Secret
+    let my_secret = env::var("CPAW_SECRET").expect("Please set 'CPAW_SECRET' environment variable").as_bytes().to_vec();
     chain.link_around(SessionStorage::new(SignedCookieBackend::new(my_secret)));
 
     // Add HandlerbarsEngine to middleware Chain
