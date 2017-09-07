@@ -173,7 +173,7 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "css": ["about.css", "register.css"],
+        "css": ["about.css", "user.css"],
         "js": ["register.js"],
     });
 
@@ -409,7 +409,7 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
     let handlebars = template_html(filename);
     let data = json!({
         "parent": "base",
-        "css": ["about.css", "user_update.css"],
+        "css": ["about.css", "user.css"],
         "js": ["user_update.js"],
         "user": target_user,
         "csrf_token": csrf_token
