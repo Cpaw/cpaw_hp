@@ -6,7 +6,7 @@ cd "${script_dir}/.."
 # install diesel
 if ! type diesel >/dev/null 2>&1 ; then
   echo '[+] Install diesel_cli'
-  cargo install diesel_cli --no-default-features --features "postgres sqlite mysql"
+  cargo install diesel_cli --no-default-features --features "sqlite"
 fi
 
 echo '[+] Migration'
