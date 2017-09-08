@@ -67,7 +67,7 @@ impl User {
         let conn = get_connection();
         let result = conn.execute(
             "UPDATE users SET email=?2, username=?3, password=?4, permission=?5,
-                              bio=?6, twitter=?8, facebook=?9, tags=?10
+                              bio=?6, twitter=?7, facebook=?8, tags=?9
              WHERE id=?1",
             &[&self.id, &self.email, &self.username, &self.password,
                 &self.permission, &self.bio,
