@@ -401,10 +401,8 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
         Err(res) => { return Ok(res); }
     };
 
-    let csrf_token = make_csrf_token(
-        req.session().get::<UserSession>().unwrap().unwrap().id.to_string()
-    );
     
+    let csrf_token = make_csrf_token(id);
     let filename = "user_update.hbs";
     let handlebars = template_html(filename);
     let data = json!({
