@@ -4,7 +4,7 @@ $(function() {
 
         $.ajax({
             type: 'POST',
-            url: 'http://localhost:3000/login',
+            url: '/login',
             data: {
                 "username": $('input#username').val(),
                 "password": $('input#password').val()
@@ -30,7 +30,7 @@ $(function() {
         });
     });
     
-    $.getJSON('http://localhost:3000/username.json', function(d) {
+    $.getJSON('/username.json', function(d) {
         username = d["session"];
         if(username != "guest") {
             $('a#login').attr("href", "/user/" + username).text(username).attr('data-title', username);

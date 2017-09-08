@@ -36,7 +36,7 @@ $(function(){
 
     $.ajax({
       type: 'PATCH',
-      url: 'http://localhost:3000/user/' + username,
+      url: '/user/' + username,
       data: {
           "email": $('input#email').val(),
           "username": $('input#username').val(),
