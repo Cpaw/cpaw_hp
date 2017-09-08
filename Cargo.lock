@@ -2,6 +2,7 @@
 name = "cpaw_hp"
 version = "0.1.0"
 dependencies = [
+ "base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "handlebars 0.29.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "handlebars-iron 0.25.2 (registry+https://github.com/rust-lang/crates.io-index)",
