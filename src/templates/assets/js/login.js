@@ -2,7 +2,6 @@ $(function() {
     /* ログイン処理 */
     $('button#submit').on('click', function(e) {
 
-        
         $.ajax({
             type: 'POST',
             url: 'http://localhost:3000/login',
