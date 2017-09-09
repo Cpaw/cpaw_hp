@@ -395,14 +395,13 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
         return Ok(Response::with((status::Found, Redirect(url_for!(req, "index")))));        
     }
     
-    let mut id = req.session().get::<UserSession>().unwrap().unwrap().id.to_string();
     let target_user = match user_update_valid(req) {
         Ok(user) => user,
         Err(res) => { return Ok(res); }
     };
 
     
-    let csrf_token = make_csrf_token(id);
+    let csrf_token = make_csrf_token(target_user.id.to_string());
     let filename = "user_update.hbs";
     let handlebars = template_html(filename);
     let data = json!({
