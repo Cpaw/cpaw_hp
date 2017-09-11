@@ -28,7 +28,6 @@ pub struct User {
     pub password: String,
     pub permission: i32,
     pub bio: String,
-    pub graphic: String,
     pub twitter: String,
     pub facebook: String,
     pub tags: Vec<String>,
@@ -52,10 +51,10 @@ impl User {
     pub fn insert(&self) -> bool {
         let conn = get_connection();
         let result = conn.execute(
-            "INSERT INTO users (email, username, password, permission, bio, graphic, twitter, facebook, tags)
-               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            "INSERT INTO users (email, username, password, permission, bio, twitter, facebook, tags)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
             &[&self.email, &self.username, &self.password, &self.permission,
-              &self.bio, &self.graphic, &self.twitter, &self.facebook, &self.tags_to_json_str()]);
+              &self.bio, &self.twitter, &self.facebook, &self.tags_to_json_str()]);
 
         match result {
             Ok(_) => { true },
@@ -68,10 +67,10 @@ impl User {
         let conn = get_connection();
         let result = conn.execute(
             "UPDATE users SET email=?2, username=?3, password=?4, permission=?5,
-                              bio=?6, graphic=?7, twitter=?8, facebook=?9, tags=?10
+                              bio=?6, twitter=?7, facebook=?8, tags=?9
              WHERE id=?1",
             &[&self.id, &self.email, &self.username, &self.password,
-                &self.permission, &self.bio, &self.graphic,
+                &self.permission, &self.bio,
                 &self.twitter, &self.facebook, &self.tags_to_json_str()]);
 
         match result {
@@ -82,7 +81,7 @@ impl User {
 
     pub fn all() -> Vec<User> {
         let conn = get_connection();
-        let mut stmt = conn.prepare("SELECT id, email, username, bio, graphic, twitter, facebook, tags FROM users").unwrap();
+        let mut stmt = conn.prepare("SELECT id, email, username, bio, twitter, facebook, tags FROM users").unwrap();
         let user_iter = stmt.query_map(&[], |row| {
             User {
                 id: row.get(0),
@@ -91,10 +90,9 @@ impl User {
                 password: "".to_string(),
                 permission: 0,
                 bio: row.get(3),
-                graphic: row.get(4),
-                twitter: row.get(5),
-                facebook: row.get(6),
-                tags: User::tags_from_json_str(row.get(7)),
+                twitter: row.get(4),
+                facebook: row.get(5),
+                tags: User::tags_from_json_str(row.get(6)),
             }
         }).unwrap();
 
@@ -110,7 +108,7 @@ impl User {
         let conn = get_connection();
         // TODO Danger
         let mut stmt = conn.prepare(&format!("SELECT id, email, username, password, permission,
-                                             bio, graphic, twitter, facebook, tags FROM users WHERE {} = ?", key)[..]).unwrap();
+                                             bio, twitter, facebook, tags FROM users WHERE {} = ?", key)[..]).unwrap();
         let result_users = stmt.query_map(&[value], |row| {
             User {
                 id: row.get(0),
@@ -119,10 +117,9 @@ impl User {
                 password: row.get(3),
                 permission: row.get(4),
                 bio: row.get(5),
-                graphic: row.get(6),
-                twitter: row.get(7),
-                facebook: row.get(8),
-                tags: User::tags_from_json_str(row.get(9)),
+                twitter: row.get(6),
+                facebook: row.get(7),
+                tags: User::tags_from_json_str(row.get(8)),
             }
         });
 
@@ -154,8 +151,7 @@ impl User {
         conn.execute("DELETE FROM users WHERE id = ?1", &[&id]).is_ok()
     }
 
-    pub fn new(email: String, username: String, password: String,
-               bio: String, graphic: String,
+    pub fn new(email: String, username: String, password: String, bio: String,
                twitter: String, facebook: String, tags: Vec<String>) -> Result<User, String> {
         if User::find_by(&"email", &email).is_some() {
             return Err("This email already registered".to_string());
@@ -172,7 +168,6 @@ impl User {
             password: "".to_string(),
             permission: 0,
             bio: bio,
-            graphic: graphic,
             twitter: twitter,
             facebook: facebook,
             tags: tags,

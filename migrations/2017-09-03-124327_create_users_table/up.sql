@@ -5,7 +5,6 @@ CREATE TABLE users (
     password    TEXT NOT NULL,
     permission  INTEGER NOT NULL DEFAULT 0,
     bio         TEXT NOT NULL,
-    graphic     TEXT NOT NULL,
     twitter     TEXT NOT NULL,
     facebook    TEXT NOT NULL,
     tags        TEXT NOT NULL

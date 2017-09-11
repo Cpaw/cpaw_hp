@@ -24,42 +24,41 @@ $(function(){
     if($('#password').val() !== ""
       && $('#password').val() !== $('#password_confirm').val()) {
 
-      $('h2').after(
-        $('<p></p>').attr('id', "errorMsg").text("パスワードが一致していません。")
-      );
-      $('#password').val("");
-      $('#password_confirm').val("");
-      return false;
-    }
+        $('h2').after(
+          $('<p></p>').attr('id', "errorMsg").text("パスワードが一致していません。")
+        );
+        $('#password').val("");
+        $('#password_confirm').val("");
+        return false;
+      }
 
     var username = location.pathname.split('/').pop();
-
-    $.ajax({
-      type: 'PATCH',
-      url: '/user/' + username,
-      data: {
-          "email": $('input#email').val(),
-          "username": $('input#username').val(),
-          "password": $('input#password').val(),
-          "bio": $('textarea#bio').val(),
-          "twitter": $('input#twitter').val(),
-          "facebook": $('input#facebook').val(),
-          "tags": [$('input#tags0').val(), $('input#tags1').val()],
-          "csrf_token": $('input#csrf_token').attr("value")
-      },
-      dataType: 'json',
-      success: function(data, textStatus, jqXHR) {
-        if(data["result"] == true) {
-          window.location.href = '/user/'+data["username"];
-        }
-
-        if($('p#errorMsg')[0]) {
-          $('p#errorMsg').remove();
-        }
-        $('h2').after(
-          $('<p></p>').attr('id', "errorMsg").text(data["result"])
-        );
+    var success = function(data, textStatus, jqXHR) {
+      if(data["result"] == true) {
+        window.location.href = '/user/'+data["username"];
       }
-    });
+
+      if($('p#errorMsg')[0]) {
+        $('p#errorMsg').remove();
+      }
+      $('h2').after(
+        $('<p></p>').attr('id', "errorMsg").text(data["result"])
+      );
+    };
+
+    var files = $("input#graphic").prop('files');
+    if (files.length != 0) {
+      var fr = new FileReader();
+      fr.readAsBinaryString(files[0]);
+
+      if (fr.readAsDataURL != fr.EMPTY) {
+        fr.onloadend = function(){
+          send_user_info('PATCH', '/user/'+username, {'graphic': window.btoa(fr.result)}, success);
+        }
+        return false;
+      }
+    }
+
+    send_user_info('PATCH', '/user/'+username, {}, success);
   });
 });

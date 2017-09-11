@@ -1,18 +1,18 @@
 -- Password is "foobar"
-INSERT INTO users (email, username, permission, bio, graphic, twitter, facebook, tags, password)
-  VALUES ("palloc@cpaw.com", "palloc", 1, "good", "palloc", "porisuteru", "palloc1", '["Security", "Machine Learning"]',
+INSERT INTO users (email, username, permission, bio, twitter, facebook, tags, password)
+  VALUES ("palloc@cpaw.com", "palloc", 1, "good", "porisuteru", "palloc1", '["Security", "Machine Learning"]',
     "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425");
 
-INSERT INTO users (email, username, permission, bio, graphic, twitter, facebook, tags, password)
-  VALUES ("chihiro@cpaw.com", "chihiro", 1, "good", "chihiro", "chihiro_tw", "chihiro_fb", '["tag0", "tag1"]',
+INSERT INTO users (email, username, permission, bio, twitter, facebook, tags, password)
+  VALUES ("chihiro@cpaw.com", "chihiro", 1, "good", "chihiro_tw", "chihiro_fb", '["tag0", "tag1"]',
     "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425");
 
-INSERT INTO users (email, username, permission, bio, graphic, twitter, facebook, tags, password)
-  VALUES ("shige@cpaw.com", "shige", 0, "good", "shige", "shige_tw", "shige_fb", '["tag0", "tag1"]',
+INSERT INTO users (email, username, permission, bio, twitter, facebook, tags, password)
+  VALUES ("shige@cpaw.com", "shige", 0, "good", "shige_tw", "shige_fb", '["tag0", "tag1"]',
     "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425");
 
-INSERT INTO users (email, username, permission, bio, graphic, twitter, facebook, tags, password)
-  VALUES ("uplus@cpaw.com", "uplus", 0, "good", "uplus", "uplus_tw", "uplus_fb", '["tag0", "tag1"]',
+INSERT INTO users (email, username, permission, bio, twitter, facebook, tags, password)
+  VALUES ("uplus@cpaw.com", "uplus", 0, "good", "uplus_tw", "uplus_fb", '["tag0", "tag1"]',
     "0a50261ebd1a390fed2bf326f2673c145582a6342d523204973d0219337f81616a8069b012587cf5635f6925f1b56c360230c19b273500ee013e030601bf2425");
 
 -- INSERT INTO users (email, username, permission, bio, graphic, password)

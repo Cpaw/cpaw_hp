@@ -15,33 +15,35 @@ $(function(){
             return false;
         }
 
-        $.ajax({
-            type: 'POST',
-            url: '/register',
-            data: {
-                "email": $('input#email').val(),
-                "username": $('input#username').val(),
-                "password": $('input#password').val(),
-                "invite_token": $('input#invite_token').val(),
-                "bio": $('textarea#bio').val(),
-                "twitter": $('input#twitter').val(),
-                "facebook": $('input#facebook').val(),
-                "tags": [$('input#tags0').val(), $('input#tags1').val()],
-            },
-            dataType: 'json',
-            success: function(data, textStatus, jqXHR) {
-                
-                if(data["result"] == true) {
-                    window.location.href = '/login';
-                }
-                
-                if($('p#errorMsg')[0]) {
-                    $('p#errorMsg').remove();
-                }
-                $('h2').after(
-                    $('<p></p>').attr('id', "errorMsg").text(data["result"])
-                );
-            }
-        });
+        var success = function(data, textStatus, jqXHR) {
+          if(data["result"] == true) {
+            window.location.href = '/login';
+          }
+
+          if($('p#errorMsg')[0]) {
+            $('p#errorMsg').remove();
+          }
+          $('h2').after(
+            $('<p></p>').attr('id', "errorMsg").text(data["result"])
+          );
+        };
+
+        var files = $("input#graphic").prop('files');
+        if (files.length != 0) {
+          var fr = new FileReader();
+          fr.readAsBinaryString(files[0]);
+
+          if (fr.readAsDataURL != fr.EMPTY) {
+            fr.onloadend = function(){
+              send_user_info('POST', '/register', {
+                'graphic': window.btoa(fr.result),
+                'invite_token': $('input#invite_token').val()
+                }, success);
+            };
+            return false;
+          }
+        }
+
+        send_user_info('POST', '/register', {'invite_token': $('input#invite_token').val()}, success);
     });
 });

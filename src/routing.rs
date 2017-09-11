@@ -5,11 +5,14 @@ extern crate params;
 extern crate crypto;
 extern crate serde_json;
 extern crate iron_sessionstorage;
+extern crate base64;
 
 use std::env;
 use std::path::Path;
 use std::io::Read;
 use std::collections::HashMap;
+use std::fs;
+use std::io::prelude::*;
 use iron::prelude::*;
 use iron::{headers, status};
 use iron::modifiers::{Redirect,Header};
@@ -27,6 +30,7 @@ use rand::{thread_rng, Rng};
 use login;
 use login::UserSession;
 
+static USER_GRAPHIC_DIR:&str = &"src/templates/assets/img/member/";
 
 // --- Helpers ---
 
@@ -155,6 +159,35 @@ pub fn email_valid(email: &String) -> bool {
         !email_splited[1].is_ascii()
 }
 
+pub fn save_user_graphic(user: &User, graphic_base64: &String) -> bool {
+    println!("[+] Called save_user_graphic");
+
+    let graphic = match base64::decode(graphic_base64) {
+        Ok(g) => g,
+        Err(_) => {
+            println!("[!] Failed to base64 decode graphic");
+            return false;
+        }
+    };
+
+    let filepath = &Path::new(USER_GRAPHIC_DIR).join(format!("{}.png", user.id));
+
+    // Write
+    let mut dest_file:fs::File = match fs::File::create(filepath) {
+        Ok(f) => f,
+        Err(_) => {
+            println!("[!] Failed to writable open {:?}", filepath);
+            return false;
+        }
+    };
+
+    if dest_file.write_all(graphic.as_slice()).is_err() {
+        println!("[!] Failed to write data to {:?}", filepath);
+        return false;
+    }
+
+    true
+}
 
 // --- Routing handlers ---
 
@@ -174,7 +207,7 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let data = json!({
         "parent": "base",
         "css": ["about.css", "user.css"],
-        "js": ["register.js"],
+        "js": ["register.js", "send_user_info.js"],
     });
 
     let html_str = handlebars.render(filename, &data).unwrap_or_else(
@@ -294,7 +327,6 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
                     username.unwrap().to_string(),
                     password.unwrap().to_string(),
                     bio.unwrap().to_string(),
-                    username.unwrap().to_string(),
                     twitter,
                     facebook,
                     tags);
@@ -305,6 +337,15 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
             println!("{}", err_str);
             return Ok(response_json(json!({"result": err_str})))
         }
+    }
+
+    let graphic = take_param!(map, "graphic", Value::String);
+    if graphic.is_some() {
+        save_user_graphic(&result.unwrap(), &graphic.unwrap());
+        println!("[+] Graphic saved");
+    }
+    else {
+        println!("[+] Graphic don't saved");
     }
 
     Ok(response_json(json!({"result": true})))
@@ -407,7 +448,7 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
     let data = json!({
         "parent": "base",
         "css": ["about.css", "user.css"],
-        "js": ["user_update.js"],
+        "js": ["user_update.js", "send_user_info.js"],
         "user": target_user,
         "csrf_token": csrf_token
     });
@@ -446,6 +487,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     let twitter  = take_param!(map, "twitter", Value::String);
     let facebook = take_param!(map, "facebook", Value::String);
     let tags:Option<Vec<String>> = take_param_array!(map, "tags", Value::String);
+    let graphic  = take_param!(map, "graphic", Value::String);
     let csrf_token = take_param!(map, "csrf_token", Value::String);
     
     println!("[ ] id:       {}", user.id);
@@ -456,6 +498,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     println!("[ ] twitter:  \"{}\"", twitter.unwrap_or(&"None".to_string()));
     println!("[ ] facebook: \"{}\"", facebook.unwrap_or(&"None".to_string()));
     println!("[ ] tags:     {:?}",   tags.as_ref().unwrap_or(&vec![]));
+    println!("[ ] graphic:  {}",     graphic.is_some() && !graphic.unwrap().is_empty());
     println!("[ ] csrf token: \"{}\"", csrf_token.unwrap_or(&"None".to_string()));
 
 
@@ -503,6 +546,12 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
 
     if tags.is_some() {
         user.tags = tags.unwrap(); // Move
+    }
+
+    if graphic.is_some() && !graphic.unwrap().is_empty() {
+        if save_user_graphic(&user, &graphic.unwrap()) {
+            println!("[ ] Graphic updated");
+        }
     }
 
     if user.update() {
