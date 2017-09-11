@@ -207,7 +207,7 @@ pub fn register_get(req: &mut Request) -> IronResult<Response> {
     let data = json!({
         "parent": "base",
         "css": ["about.css", "user.css"],
-        "js": ["register.js"],
+        "js": ["register.js", "send_user_info.js"],
     });
 
     let html_str = handlebars.render(filename, &data).unwrap_or_else(
@@ -448,7 +448,7 @@ pub fn user_update_get(req: &mut Request) -> IronResult<Response> {
     let data = json!({
         "parent": "base",
         "css": ["about.css", "user.css"],
-        "js": ["user_update.js"],
+        "js": ["user_update.js", "send_user_info.js"],
         "user": target_user,
         "csrf_token": csrf_token
     });

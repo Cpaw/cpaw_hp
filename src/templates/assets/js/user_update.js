@@ -33,33 +33,19 @@ $(function(){
     }
 
     var username = location.pathname.split('/').pop();
-
-    $.ajax({
-      type: 'PATCH',
-      url: '/user/' + username,
-      data: {
-          "email": $('input#email').val(),
-          "username": $('input#username').val(),
-          "password": $('input#password').val(),
-          "bio": $('textarea#bio').val(),
-          "twitter": $('input#twitter').val(),
-          "facebook": $('input#facebook').val(),
-          "tags": [$('input#tags0').val(), $('input#tags1').val()],
-          "csrf_token": $('input#csrf_token').attr("value")
-      },
-      dataType: 'json',
-      success: function(data, textStatus, jqXHR) {
-        if(data["result"] == true) {
-          window.location.href = '/user/'+data["username"];
-        }
-
-        if($('p#errorMsg')[0]) {
-          $('p#errorMsg').remove();
-        }
-        $('h2').after(
-          $('<p></p>').attr('id', "errorMsg").text(data["result"])
-        );
+    var success = function(data, textStatus, jqXHR) {
+      if(data["result"] == true) {
+        window.location.href = '/user/'+data["username"];
       }
-    });
+
+      if($('p#errorMsg')[0]) {
+        $('p#errorMsg').remove();
+      }
+      $('h2').after(
+        $('<p></p>').attr('id', "errorMsg").text(data["result"])
+      );
+    };
+
+    send_user_info('PATCH', '/user/'+username, {}, success);
   });
 });
