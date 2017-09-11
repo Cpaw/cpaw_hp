@@ -28,6 +28,22 @@ $(function(){
           );
         };
 
+        var files = $("input#graphic").prop('files');
+        if (files.length != 0) {
+          var fr = new FileReader();
+          fr.readAsBinaryString(files[0]);
+
+          if (fr.readAsDataURL != fr.EMPTY) {
+            fr.onloadend = function(){
+              send_user_info('POST', '/register', {
+                'graphic': window.btoa(fr.result),
+                'invite_token': $('input#invite_token').val()
+                }, success);
+            };
+            return false;
+          }
+        }
+
         send_user_info('POST', '/register', {'invite_token': $('input#invite_token').val()}, success);
     });
 });

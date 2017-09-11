@@ -24,13 +24,13 @@ $(function(){
     if($('#password').val() !== ""
       && $('#password').val() !== $('#password_confirm').val()) {
 
-      $('h2').after(
-        $('<p></p>').attr('id', "errorMsg").text("パスワードが一致していません。")
-      );
-      $('#password').val("");
-      $('#password_confirm').val("");
-      return false;
-    }
+        $('h2').after(
+          $('<p></p>').attr('id', "errorMsg").text("パスワードが一致していません。")
+        );
+        $('#password').val("");
+        $('#password_confirm').val("");
+        return false;
+      }
 
     var username = location.pathname.split('/').pop();
     var success = function(data, textStatus, jqXHR) {
@@ -45,6 +45,19 @@ $(function(){
         $('<p></p>').attr('id', "errorMsg").text(data["result"])
       );
     };
+
+    var files = $("input#graphic").prop('files');
+    if (files.length != 0) {
+      var fr = new FileReader();
+      fr.readAsBinaryString(files[0]);
+
+      if (fr.readAsDataURL != fr.EMPTY) {
+        fr.onloadend = function(){
+          send_user_info('PATCH', '/user/'+username, {'graphic': window.btoa(fr.result)}, success);
+        }
+        return false;
+      }
+    }
 
     send_user_info('PATCH', '/user/'+username, {}, success);
   });
