@@ -339,6 +339,15 @@ pub fn register_post(req: &mut Request) -> IronResult<Response> {
         }
     }
 
+    let graphic = take_param!(map, "graphic", Value::String);
+    if graphic.is_some() {
+        save_user_graphic(&result.unwrap(), &graphic.unwrap());
+        println!("[+] Graphic saved");
+    }
+    else {
+        println!("[+] Graphic don't saved");
+    }
+
     Ok(response_json(json!({"result": true})))
 }
 
@@ -478,6 +487,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     let twitter  = take_param!(map, "twitter", Value::String);
     let facebook = take_param!(map, "facebook", Value::String);
     let tags:Option<Vec<String>> = take_param_array!(map, "tags", Value::String);
+    let graphic  = take_param!(map, "graphic", Value::String);
     let csrf_token = take_param!(map, "csrf_token", Value::String);
     
     println!("[ ] id:       {}", user.id);
@@ -488,6 +498,7 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
     println!("[ ] twitter:  \"{}\"", twitter.unwrap_or(&"None".to_string()));
     println!("[ ] facebook: \"{}\"", facebook.unwrap_or(&"None".to_string()));
     println!("[ ] tags:     {:?}",   tags.as_ref().unwrap_or(&vec![]));
+    println!("[ ] graphic:  {}",     graphic.is_some() && !graphic.unwrap().is_empty());
     println!("[ ] csrf token: \"{}\"", csrf_token.unwrap_or(&"None".to_string()));
 
 
@@ -535,6 +546,12 @@ pub fn user_update_patch(req: &mut Request) -> IronResult<Response> {
 
     if tags.is_some() {
         user.tags = tags.unwrap(); // Move
+    }
+
+    if graphic.is_some() && !graphic.unwrap().is_empty() {
+        if save_user_graphic(&user, &graphic.unwrap()) {
+            println!("[ ] Graphic updated");
+        }
     }
 
     if user.update() {
